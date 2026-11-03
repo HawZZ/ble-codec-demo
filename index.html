@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="BLE 应用层 PDU 离线编解码实验台。">
+  <title>BLE 编解码实验台</title>
+  <link rel="stylesheet" href="./app.css">
+  <script src="./browser-runtime.js" defer></script>
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+
+  <header class="app-header">
+    <div class="brand-block">
+      <div class="brand-mark" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+      <div>
+        <p class="eyebrow">APPLICATION PDU · OFFLINE WORKBENCH</p>
+        <h1>BLE 编解码实验台</h1>
+      </div>
+    </div>
+
+    <div class="header-context" aria-live="polite">
+      <div class="server-state" id="serverStatus" data-state="loading">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="serverStatusText">正在加载浏览器引擎</span>
+      </div>
+      <div class="workspace-token" id="headerWorkspaceName">空白工作区</div>
+    </div>
+
+    <div class="header-actions">
+      <button class="button button-quiet" id="openImportBtn" type="button">
+        <span class="button-icon" aria-hidden="true">＋</span>导入 / 示例
+      </button>
+      <button class="button button-quiet" id="saveDraftBtn" type="button">保存草稿</button>
+      <button class="button button-quiet" id="exportDictionaryBtn" type="button" disabled>导出机器字典</button>
+      <button class="button button-accent" id="exportWorkspaceBtn" type="button">导出工作区</button>
+    </div>
+  </header>
+
+  <main id="main" class="app-main">
+    <div class="workspace-bar">
+      <nav class="primary-tabs" aria-label="工作区视图" role="tablist">
+        <button class="primary-tab is-active" id="configTabBtn" type="button" role="tab" aria-selected="true" aria-controls="configPanel" data-tab="config">
+          配置工作区
+          <span class="tab-count" id="configTabCount">0</span>
+        </button>
+        <button class="primary-tab" id="labTabBtn" type="button" role="tab" aria-selected="false" aria-controls="labPanel" data-tab="lab">
+          编解码实验
+        </button>
+      </nav>
+
+      <div class="compile-cluster">
+        <div class="compile-state" id="compileStatus" data-state="idle">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="compileStatusText">等待工作区数据</span>
+        </div>
+        <button class="button button-outline" id="compileBtn" type="button">重新编译</button>
+      </div>
+    </div>
+
+    <div class="global-notice" id="globalNotice" role="status" hidden></div>
+
+    <section class="tab-panel" id="configPanel" role="tabpanel" aria-labelledby="configTabBtn">
+      <div class="overview-grid">
+        <article class="status-card">
+          <div class="card-kicker">
+            <span>WORKSPACE</span>
+            <span class="source-chip" id="workspaceSource">浏览器空白</span>
+          </div>
+          <div class="status-card-main">
+            <div>
+              <h2 id="workspaceTitle">从空白工作区开始</h2>
+              <p id="workspaceSubtitle">导入现有字典，或逐行建立指令、绑定和约束。</p>
+            </div>
+            <div class="revision-mark" id="revisionMark" title="仅表示本页面内的编辑修订">REV 0</div>
+          </div>
+          <div class="stat-row" aria-label="工作区统计">
+            <div class="stat"><strong id="statCommands">0</strong><span>指令</span></div>
+            <div class="stat"><strong id="statBindings">0</strong><span>字段绑定</span></div>
+            <div class="stat"><strong id="statGroups">0</strong><span>约束组</span></div>
+            <div class="stat"><strong id="statMethods">0</strong><span>物模型方法</span></div>
+          </div>
+        </article>
+
+        <article class="identity-card">
+          <div class="card-kicker">
+            <span>EXPERIMENT IDENTITY</span>
+            <span class="scope-chip">自动生成</span>
+          </div>
+          <div class="identity-empty" id="identityEmpty">
+            <p>编译后生成实验快照身份。导入完整机器字典时，保留其中明确声明的身份。</p>
+          </div>
+          <dl class="identity-grid" id="identityGrid" hidden></dl>
+          <p class="identity-footnote">身份只用于本次离线字典校验，不代表真实固件或线上产品。</p>
+        </article>
+      </div>
+
+      <section class="onboarding" id="onboardingPanel" aria-labelledby="onboardingTitle">
+        <div class="onboarding-copy">
+          <p class="eyebrow">QUICK START</p>
+          <h2 id="onboardingTitle">先建立一套可以被验证的映射</h2>
+          <p>选择预置实验查看完整链路，或从空白逐行配置。所有导入均先校验，成功后才替换当前编辑。</p>
+          <div class="onboarding-actions">
+            <button class="button button-primary" id="onboardingImportBtn" type="button">导入工作区或表</button>
+            <button class="button button-outline-light" id="onboardingExampleBtn" type="button">查看预置实验</button>
+          </div>
+        </div>
+        <div class="quick-examples" id="quickExamples" aria-label="预置实验"></div>
+      </section>
+
+      <div class="workspace-error" id="workspaceError" role="alert" hidden>
+        <div>
+          <span class="error-code" id="workspaceErrorCode">CONFIG_INVALID</span>
+          <p id="workspaceErrorMessage"></p>
+        </div>
+        <button class="button button-outline" id="workspaceErrorDismiss" type="button">收起</button>
+      </div>
+
+      <section class="config-section" id="configWorkspace">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">THING MODEL</p>
+            <h2>物模型结构</h2>
+            <p>逐层配置方法输入／输出、属性和事件；下方 JSON 编辑器可补足复杂结构。</p>
+          </div>
+          <div class="section-actions">
+            <span class="mini-stat" id="modelSummary">0 个方法</span>
+            <button class="button button-small button-outline" id="addPropertyBtn" type="button">＋ 属性</button>
+            <button class="button button-small button-outline" id="addMethodBtn" type="button">＋ 方法</button>
+            <button class="button button-small button-outline" id="addEventBtn" type="button">＋ 事件</button>
+          </div>
+        </div>
+
+        <div class="model-scope-note">
+          <span class="note-icon" aria-hidden="true">i</span>
+          <p><strong>参与编解码的是方法输入／输出。</strong>属性和事件可在此维护，但只有经指令映射、并与所选方法输入输出路径对应的节点才会转换；前端不会假定它们自动绑定。</p>
+        </div>
+
+        <div class="model-layout">
+          <article class="panel model-tree-panel">
+            <div class="panel-head">
+              <div>
+                <h3>结构树</h3>
+                <p>点击行内操作配置层级、类型和约束。</p>
+              </div>
+              <div class="tree-legend" aria-label="图例">
+                <span><i class="legend-dot object"></i>对象</span>
+                <span><i class="legend-dot array"></i>数组</span>
+                <span><i class="legend-dot leaf"></i>叶子</span>
+              </div>
+            </div>
+            <div class="model-tree" id="modelTree" role="tree" aria-label="物模型结构树"></div>
+          </article>
+
+          <article class="panel model-json-panel">
+            <div class="panel-head">
+              <div>
+                <h3>模型 JSON</h3>
+                <p>复杂 schema 可直接编辑，应用后重新编译。</p>
+              </div>
+              <button class="icon-button" id="formatModelJsonBtn" type="button" title="格式化 JSON">格式化</button>
+            </div>
+            <div class="editor-shell">
+              <div class="editor-rail" aria-hidden="true">JSON</div>
+              <textarea class="code-editor" id="modelJson" spellcheck="false" aria-label="物模型 JSON"></textarea>
+            </div>
+            <div class="editor-message" id="modelJsonStatus" role="status" hidden></div>
+            <div class="editor-actions">
+              <button class="button button-small button-ghost" id="discardModelJsonBtn" type="button">还原</button>
+              <button class="button button-small button-primary" id="applyModelJsonBtn" type="button">应用 JSON</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="config-section" id="tablesSection">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">MAPPING TABLES</p>
+            <h2>指令与字段映射</h2>
+            <p>三表保持字符串列。修改后自动失效旧编译结果，并重新校验当前工作区。</p>
+          </div>
+          <div class="section-actions">
+            <button class="button button-small button-outline" id="addTableRowBtn" type="button">＋ 新增行</button>
+          </div>
+        </div>
+
+        <article class="panel tables-panel">
+          <div class="table-tabs" role="tablist" aria-label="映射表">
+            <button class="table-tab is-active" type="button" role="tab" aria-selected="true" data-table-tab="commands">
+              指令 <span id="commandsCount">0</span>
+            </button>
+            <button class="table-tab" type="button" role="tab" aria-selected="false" data-table-tab="bindings">
+              字段绑定 <span id="bindingsCount">0</span>
+            </button>
+            <button class="table-tab" type="button" role="tab" aria-selected="false" data-table-tab="groups">
+              约束组 <span id="groupsCount">0</span>
+            </button>
+          </div>
+          <div class="table-intro">
+            <div>
+              <strong id="tableTitle">指令表</strong>
+              <p id="tableDescription">定义操作 ID、物模型方法、SID/CID 与交互语义。</p>
+            </div>
+            <div class="table-toolbar-meta">
+              <span id="tableCount">0 行</span>
+              <span class="table-save-note">本地自动校验</span>
+            </div>
+          </div>
+          <div class="table-scroll" id="tableScroll">
+            <table class="data-table" id="workspaceTable">
+              <colgroup id="workspaceTableCols"></colgroup>
+              <thead id="workspaceTableHead"></thead>
+              <tbody id="workspaceTableBody"></tbody>
+            </table>
+          </div>
+          <div class="table-empty" id="tableEmpty" hidden>
+            <p>还没有数据行。</p>
+            <button class="button button-small button-primary" id="emptyAddRowBtn" type="button">新增第一行</button>
+          </div>
+          <p class="table-hint" id="tableHint"></p>
+        </article>
+      </section>
+    </section>
+
+    <section class="tab-panel" id="labPanel" role="tabpanel" aria-labelledby="labTabBtn" hidden>
+      <div class="lab-layout">
+        <aside class="lab-context panel">
+          <div class="panel-head panel-head-compact">
+            <div>
+              <p class="eyebrow">RUN CONTEXT</p>
+              <h2>实验参数</h2>
+            </div>
+            <span class="offline-badge">LOCAL</span>
+          </div>
+
+          <div class="field-group">
+            <span class="field-label">传输方向</span>
+            <div class="segmented segmented-stack" id="directionSwitch" role="group" aria-label="传输方向">
+              <button class="segment is-active" type="button" data-direction="down" aria-pressed="true">
+                <span>下行</span><small>APP → 设备</small>
+              </button>
+              <button class="segment" type="button" data-direction="up" aria-pressed="false">
+                <span>上行</span><small>设备 → APP</small>
+              </button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="operationSelect">目标指令</label>
+            <select class="select select-large" id="operationSelect"></select>
+            <p class="field-help" id="operationHelp">选择自动识别仅适用于解码。</p>
+          </div>
+
+          <div class="field-group">
+            <span class="field-label">处理方式</span>
+            <div class="segmented" id="modeSwitch" role="group" aria-label="处理方式">
+              <button class="segment is-active" type="button" data-mode="encode" aria-pressed="true">数据 → HEX</button>
+              <button class="segment" type="button" data-mode="decode" aria-pressed="false">HEX → 数据</button>
+            </div>
+          </div>
+
+          <div class="scope-summary">
+            <span class="scope-chip" id="labScopeBadge">方法输入</span>
+            <p id="labScopeDescription">表单依据当前指令的输入 schema 生成。</p>
+          </div>
+
+          <div class="operation-meta" id="operationMeta">
+            <span>尚未选择有效指令</span>
+          </div>
+
+          <div class="safety-note">
+            <span class="safety-mark" aria-hidden="true"></span>
+            <p>只在浏览器完成应用层 PDU 字节转换，不连接、不发送、不宣称设备已执行。</p>
+          </div>
+        </aside>
+
+        <div class="lab-workbench">
+          <div class="lab-heading">
+            <div>
+              <div class="heading-line">
+                <h2 id="labTitle">构造应用层 PDU</h2>
+                <span class="result-state" id="resultFreshness">等待输入</span>
+              </div>
+              <p id="labSubtitle">按物模型输入生成 HEX，并在提交前核对转换值。</p>
+            </div>
+            <div class="lab-heading-actions">
+              <span class="compile-inline" id="labCompileState">未编译</span>
+            </div>
+          </div>
+
+          <div class="lab-grid">
+            <article class="panel input-panel" id="inputPanel">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow" id="inputEyebrow">MODEL INPUT</p>
+                  <h3 id="inputPanelTitle">采用表单填写</h3>
+                </div>
+                <div class="view-switch" id="formViewSwitch" role="group" aria-label="填写方式">
+                  <button class="mini-tab is-active" type="button" data-form-view="form" aria-pressed="true">表单</button>
+                  <button class="mini-tab" type="button" data-form-view="json" aria-pressed="false">JSON</button>
+                </div>
+              </div>
+
+              <div id="encodePane">
+                <div class="form-status-line">
+                  <span id="formScopeText">从当前方法 schema 生成</span>
+                  <button class="text-button" id="resetFormBtn" type="button">重置为默认值</button>
+                </div>
+                <div class="form-error" id="formJsonError" role="alert" hidden></div>
+                <div class="generated-form" id="generatedForm"></div>
+                <div class="json-input-shell" id="formJsonShell" hidden>
+                  <textarea class="code-editor code-editor-lab" id="formJson" spellcheck="false" aria-label="待编码 JSON"></textarea>
+                  <div class="json-input-actions">
+                    <span>提交时校验对象结构与值域</span>
+                    <button class="button button-small button-outline" id="applyFormJsonBtn" type="button">校验并回到表单</button>
+                  </div>
+                </div>
+                <div class="form-empty" id="formEmpty" hidden>
+                  <h4>当前没有可生成的输入表单</h4>
+                  <p id="formEmptyText">选择已编译指令后生成表单。</p>
+                  <button class="button button-small button-outline" type="button" data-form-view="json">改用 JSON</button>
+                </div>
+                <div class="primary-action-row">
+                  <p class="action-note" id="encodeActionNote">编码将基于当前所有编辑重新编译。</p>
+                  <button class="button button-primary button-run" id="encodeBtn" type="button">
+                    <span>生成 HEX</span><span class="button-key">↵</span>
+                  </button>
+                </div>
+              </div>
+
+              <div id="decodePane" hidden>
+                <label class="field-label" for="decodeInput">完整应用层 PDU HEX</label>
+                <textarea class="code-editor hex-editor" id="decodeInput" spellcheck="false" placeholder="例如：80 01 06 01 05"></textarea>
+                <div class="hex-input-meta">
+                  <span id="hexInputMeta">包含 SID/CID，允许空白分隔</span>
+                  <button class="text-button" id="formatHexBtn" type="button">整理格式</button>
+                  <button class="text-button text-button-muted" id="clearHexBtn" type="button">清空</button>
+                </div>
+                <div class="decode-hint">
+                  <strong>自动识别</strong>只按 PDU 前 2 字节唯一匹配 SID/CID；请求与上报同形时，不据此宣称精确关联。
+                </div>
+                <div class="primary-action-row">
+                  <p class="action-note">不会发送到蓝牙设备，只做离线解析。</p>
+                  <button class="button button-primary button-run" id="decodeBtn" type="button">
+                    <span>解码 PDU</span><span class="button-key">↵</span>
+                  </button>
+                </div>
+              </div>
+            </article>
+
+            <article class="panel output-panel" aria-live="polite">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">RESULT</p>
+                  <h3 id="outputPanelTitle">转换结果</h3>
+                </div>
+                <button class="icon-button" id="clearResultBtn" type="button" hidden>清空结果</button>
+              </div>
+
+              <div class="lab-empty" id="resultEmpty">
+                <div class="empty-signal" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+                <h3>结果将在这里出现</h3>
+                <p>填写模型数据或粘贴 HEX。发生编辑、切换方向或指令时，旧结果会立即标记为过期并清除。</p>
+              </div>
+
+              <div class="lab-error" id="resultError" role="alert" hidden>
+                <div class="lab-error-head">
+                  <span class="error-code" id="resultErrorCode">CONFIG_INVALID</span>
+                  <span id="resultErrorTitle">转换未完成</span>
+                </div>
+                <p id="resultErrorMessage"></p>
+                <p class="lab-error-retain">当前工作区和输入内容已保留，可修正后重试。</p>
+              </div>
+
+              <div class="busy-state" id="resultBusy" hidden>
+                <span class="spinner" aria-hidden="true"></span>
+                <p>正在重新编译并转换当前工作区…</p>
+              </div>
+
+              <div class="result-content" id="resultPanel" hidden>
+                <div class="result-summary">
+                  <div><strong id="resultByteCount">0 B</strong><span>完整 PDU</span></div>
+                  <div><strong id="resultBitCount">0 bit</strong><span>位宽</span></div>
+                  <div><strong id="resultDirection">下行</strong><span>方向</span></div>
+                </div>
+
+                <section class="result-block result-hex-block" id="hexResultBlock">
+                  <div class="result-block-head">
+                    <div>
+                      <span class="result-label" id="hexResultLabel">应用层 HEX</span>
+                      <p id="hexResultHint">包含 SID/CID 的完整应用 PDU</p>
+                    </div>
+                    <button class="copy-button" id="copyHexBtn" type="button">复制 HEX</button>
+                  </div>
+                  <pre class="hex-output" id="resultHex"></pre>
+                  <details class="bit-details">
+                    <summary>逐字节二进制</summary>
+                    <pre id="resultBits"></pre>
+                  </details>
+                </section>
+
+                <section class="result-block">
+                  <div class="result-block-head">
+                    <div>
+                      <span class="result-label" id="modelResultLabel">物模型数据 JSON</span>
+                      <p id="modelResultHint">由当前工作区重新编译后解析</p>
+                    </div>
+                    <button class="copy-button" id="copyModelBtn" type="button">复制 JSON</button>
+                  </div>
+                  <pre class="json-output" id="resultModelJson"></pre>
+                </section>
+
+                <section class="result-block metadata-block">
+                  <div class="result-block-head">
+                    <div>
+                      <span class="result-label">交互元数据</span>
+                      <p>与物模型数据分开显示</p>
+                    </div>
+                  </div>
+                  <dl class="metadata-list" id="resultMetadata"></dl>
+                </section>
+
+                <div class="result-footnote">
+                  <span class="result-footnote-mark" aria-hidden="true"></span>
+                  <p id="resultFootnote">离线验算结果，不代表设备执行、响应归属或云端状态。</p>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog class="modal import-modal" id="importDialog" aria-labelledby="importDialogTitle">
+    <div class="modal-head">
+      <div>
+        <p class="eyebrow">IMPORT</p>
+        <h2 id="importDialogTitle">导入工作区与映射表</h2>
+        <p>文件先在浏览器本地校验；只有成功响应才替换当前编辑。</p>
+      </div>
+      <button class="modal-close" id="closeImportBtn" type="button" aria-label="关闭导入窗口">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="import-error" id="importError" role="alert" hidden></div>
+      <div class="import-busy" id="importBusy" aria-live="polite" hidden>
+        <span class="spinner" aria-hidden="true"></span>
+        <span id="importBusyText">正在校验文件…</span>
+      </div>
+
+      <section class="import-section">
+        <div class="import-section-head">
+          <h3>预置实验</h3>
+          <span>工作区会替换当前编辑</span>
+        </div>
+        <div class="example-grid" id="exampleGrid"></div>
+      </section>
+
+      <section class="import-section">
+        <div class="import-section-head">
+          <h3>上传文件</h3>
+          <span>UTF-8 · 单次 2 MiB 内</span>
+        </div>
+        <div class="upload-grid">
+          <label class="upload-row upload-row-wide" for="uploadWorkspace">
+            <span class="file-kind">WS</span>
+            <span class="upload-copy"><strong>完整工作区 JSON</strong><small>ble-codec-workspace/1，模型与三表一并恢复</small></span>
+            <span class="file-action">选择文件</span>
+            <input id="uploadWorkspace" type="file" accept=".json,application/json" data-upload-kind="workspace">
+          </label>
+          <label class="upload-row upload-row-wide" for="uploadDictionary">
+            <span class="file-kind">DICT</span>
+            <span class="upload-copy"><strong>机器字典 JSON</strong><small>保留明确身份，并重建可编辑工作区</small></span>
+            <span class="file-action">选择文件</span>
+            <input id="uploadDictionary" type="file" accept=".json,application/json" data-upload-kind="dictionary">
+          </label>
+          <label class="upload-row" for="uploadModel">
+            <span class="file-kind">MODEL</span>
+            <span class="upload-copy"><strong>物模型 JSON</strong><small>替换当前模型</small></span>
+            <span class="file-action">选择</span>
+            <input id="uploadModel" type="file" accept=".json,application/json" data-upload-kind="model">
+          </label>
+          <label class="upload-row" for="uploadCommands">
+            <span class="file-kind">CSV</span>
+            <span class="upload-copy"><strong>commands.csv</strong><small>严格检查表头</small></span>
+            <span class="file-action">选择</span>
+            <input id="uploadCommands" type="file" accept=".csv,text/csv" data-upload-kind="commands">
+          </label>
+          <label class="upload-row" for="uploadBindings">
+            <span class="file-kind">CSV</span>
+            <span class="upload-copy"><strong>bindings.csv</strong><small>严格检查表头</small></span>
+            <span class="file-action">选择</span>
+            <input id="uploadBindings" type="file" accept=".csv,text/csv" data-upload-kind="bindings">
+          </label>
+          <label class="upload-row" for="uploadGroups">
+            <span class="file-kind">CSV</span>
+            <span class="upload-copy"><strong>groups.csv</strong><small>严格检查表头</small></span>
+            <span class="file-action">选择</span>
+            <input id="uploadGroups" type="file" accept=".csv,text/csv" data-upload-kind="groups">
+          </label>
+        </div>
+      </section>
+
+      <section class="import-section draft-section">
+        <div class="import-section-head">
+          <h3>本地草稿</h3>
+          <span>仅保存在当前浏览器</span>
+        </div>
+        <div class="draft-row">
+          <div>
+            <strong id="draftTitle">尚未保存草稿</strong>
+            <p id="draftMeta">点击页头“保存草稿”后才会写入浏览器。</p>
+          </div>
+          <div class="draft-actions">
+            <button class="button button-small button-outline" id="restoreDraftBtn" type="button" disabled>恢复草稿</button>
+            <button class="button button-small button-ghost" id="deleteDraftBtn" type="button" disabled>删除</button>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="modal-foot">
+      <p>CSV 走当前工作区导入；成功响应会刷新全部编辑区。</p>
+      <button class="button button-primary" id="doneImportBtn" type="button">完成</button>
+    </div>
+  </dialog>
+
+  <dialog class="modal node-modal" id="nodeDialog" aria-labelledby="nodeDialogTitle">
+    <form id="nodeForm" method="dialog" novalidate>
+      <div class="modal-head">
+        <div>
+          <p class="eyebrow" id="nodeDialogEyebrow">MODEL NODE</p>
+          <h2 id="nodeDialogTitle">配置模型节点</h2>
+          <p id="nodeDialogSubtitle">只修改当前物模型结构，不改写字段映射。</p>
+        </div>
+        <button class="modal-close" id="closeNodeBtn" type="button" aria-label="关闭节点配置">×</button>
+      </div>
+      <div class="modal-body node-form-body">
+        <input type="hidden" id="nodeMode">
+        <div class="node-identity-grid">
+          <label class="form-control">
+            <span id="nodeNameLabel">字段键名</span>
+            <input class="input" id="nodeName" autocomplete="off" spellcheck="false">
+            <small>字母或下划线开头；改名后需同步检查映射路径。</small>
+          </label>
+          <label class="form-control">
+            <span>显示名称</span>
+            <input class="input" id="nodeTitle" autocomplete="off">
+            <small>用于表单标签，可留空。</small>
+          </label>
+        </div>
+        <label class="form-control">
+          <span>说明</span>
+          <textarea class="input textarea-small" id="nodeDescription" rows="2"></textarea>
+        </label>
+
+        <div class="node-schema-fields" id="nodeSchemaFields">
+          <div class="node-select-row">
+            <label class="form-control">
+              <span>节点类型</span>
+              <select class="select" id="nodeType">
+                <option value="object">对象 object</option>
+                <option value="array">数组 array</option>
+                <option value="string">字符串 string</option>
+                <option value="integer">整数 integer</option>
+                <option value="number">数字 number</option>
+                <option value="boolean">布尔 boolean</option>
+              </select>
+            </label>
+            <label class="form-control" id="arrayItemTypeWrap" hidden>
+              <span>数组元素类型</span>
+              <select class="select" id="arrayItemType">
+                <option value="object">对象 object</option>
+                <option value="string">字符串 string</option>
+                <option value="integer">整数 integer</option>
+                <option value="number">数字 number</option>
+                <option value="boolean">布尔 boolean</option>
+                <option value="array">数组 array</option>
+              </select>
+            </label>
+            <label class="check-field" id="requiredFieldWrap">
+              <input type="checkbox" id="nodeRequired">
+              <span>在父对象中必填</span>
+            </label>
+          </div>
+
+          <div class="constraint-section" id="nodeConstraintFields">
+            <div class="constraint-heading">
+              <span>值域与长度</span>
+              <small>空白表示不添加该约束</small>
+            </div>
+            <div class="constraint-grid">
+              <label class="form-control"><span>最小值</span><input class="input" id="nodeMinimum" inputmode="decimal"></label>
+              <label class="form-control"><span>最大值</span><input class="input" id="nodeMaximum" inputmode="decimal"></label>
+              <label class="form-control"><span>最小长度</span><input class="input" id="nodeMinLength" inputmode="numeric"></label>
+              <label class="form-control"><span>最大长度</span><input class="input" id="nodeMaxLength" inputmode="numeric"></label>
+              <label class="form-control"><span>最小项数</span><input class="input" id="nodeMinItems" inputmode="numeric"></label>
+              <label class="form-control"><span>最大项数</span><input class="input" id="nodeMaxItems" inputmode="numeric"></label>
+              <label class="form-control"><span>倍数 multipleOf</span><input class="input" id="nodeMultipleOf" inputmode="decimal"></label>
+            </div>
+          </div>
+
+          <div class="node-detail-grid">
+            <label class="form-control">
+              <span>枚举值</span>
+              <textarea class="input textarea-small" id="nodeEnum" rows="3" placeholder="每行一个值，例如：&#10;0&#10;1&#10;2"></textarea>
+            </label>
+          </div>
+          <p class="constraint-footnote">对象始终按封闭结构保存（additionalProperties=false）；字符串如需原始字节，可在 JSON 中声明受支持的 format: "hex"。</p>
+        </div>
+
+        <div class="node-warning" id="nodeWarning">
+          <span aria-hidden="true">!</span>
+          <p>模型结构修改不会自动改写 bindings.csv 的 model_path。改名或移动节点后，请在三表中同步调整。</p>
+        </div>
+        <div class="form-error" id="nodeFormError" role="alert" hidden></div>
+      </div>
+      <div class="modal-foot">
+        <button class="button button-ghost" id="cancelNodeBtn" type="button">取消</button>
+        <button class="button button-primary" id="saveNodeBtn" type="submit">保存节点</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+
+  <noscript>
+    <div class="noscript-warning">此实验台需要 JavaScript 才能配置工作区和编解码。</div>
+  </noscript>
+</body>
+</html>
