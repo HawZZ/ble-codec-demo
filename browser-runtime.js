@@ -14,6 +14,11 @@
     worker.terminate();
   }
   worker.addEventListener('message', ({ data }) => {
+    if (data.type === 'progress') {
+      const status = document.getElementById('serverStatusText');
+      if (status && !failed) status.textContent = data.message;
+      return;
+    }
     const task = pending.get(data.id);
     if (!task) return;
     clearTimeout(task.timer);
@@ -30,7 +35,7 @@
       if (failed) return Promise.reject(failed);
       return new Promise((resolve, reject) => {
         const id = ++sequence;
-        const timer = setTimeout(() => failAll(Object.assign(new Error('浏览器引擎等待超时，请刷新页面重试'), { code: 'ENGINE_TIMEOUT' })), 120000);
+        const timer = setTimeout(() => failAll(Object.assign(new Error('浏览器引擎等待超时，请刷新页面重试'), { code: 'ENGINE_TIMEOUT' })), 300000);
         pending.set(id, { resolve, reject, timer });
         worker.postMessage({ id, path: url, body: options.body || '{}' });
       });

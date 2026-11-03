@@ -3,9 +3,37 @@ let engine;
 let queue = Promise.resolve();
 
 async function initialize() {
+  self.postMessage({ type: 'progress', message: '首次加载浏览器引擎，请稍候…' });
+  const originalFetch = self.fetch.bind(self);
+  const vendorRoot = new URL('./vendor/pyodide/', self.location.href).href;
+  let received = 0;
+  // Pages serves precompressed WASM as an ordinary gzip file. Decode it using
+  // the browser's standard stream API; retain the raw WASM fallback.
+  self.fetch = async (input, options) => {
+    const url = new URL(typeof input === 'string' || input instanceof URL ? input : input.url, self.location.href).href;
+    if (!url.startsWith(vendorRoot)) return originalFetch(input, options);
+    const compressed = url.endsWith('/pyodide.asm.wasm') && typeof DecompressionStream !== 'undefined';
+    const response = await originalFetch(compressed ? url + '.gz' : input, options);
+    if (!response.ok || !response.body) return response;
+    const counted = response.body.pipeThrough(new TransformStream({
+      transform(chunk, controller) {
+        received += chunk.byteLength;
+        self.postMessage({ type: 'progress', message: `正在下载引擎 · 已接收 ${(received / 1048576).toFixed(1)} MB` });
+        controller.enqueue(chunk);
+      }
+    }));
+    const body = compressed ? counted.pipeThrough(new DecompressionStream('gzip')) : counted;
+    const headers = new Headers(response.headers);
+    headers.delete('Content-Length');
+    headers.delete('Content-Encoding');
+    if (compressed) headers.set('Content-Type', 'application/wasm');
+    return new Response(body, { status: response.status, statusText: response.statusText, headers });
+  };
   importScripts('./vendor/pyodide/pyodide.js');
   const pyodide = await loadPyodide({ indexURL: new URL('./vendor/pyodide/', self.location.href).href });
+  self.postMessage({ type: 'progress', message: '正在加载模型校验组件…' });
   await pyodide.loadPackage('jsonschema');
+  self.postMessage({ type: 'progress', message: '正在载入字典编译器…' });
   const response = await fetch('./runtime-files.json');
   if (!response.ok) throw new Error('无法加载编解码引擎文件');
   const files = await response.json();

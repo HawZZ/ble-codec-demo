@@ -24,8 +24,8 @@
       "sha256": "78b12c3a81360b357002334f0e70ea0e92eebf7a9b358805c03c48484945f3bb"
     },
     "README.md": {
-      "bytes": 1397,
-      "sha256": "8c86c62fd135cf98a5a7eb40b6fb0e0d58733745dda470dbc626d2af3aa0c642"
+      "bytes": 1472,
+      "sha256": "76b9d1ffe394f34e610e273f45b21210955585ec988b8938aa1f3c9279aa3a7e"
     },
     "app.css": {
       "bytes": 59475,
@@ -36,12 +36,12 @@
       "sha256": "02004af69baf31c4c2ea235176e94634bbf1f942644caf65814fc07e5061b39d"
     },
     "browser-runtime.js": {
-      "bytes": 1507,
-      "sha256": "8fa903150f357ca2e0374354f2d685ed702055518dd6aca7faba1ad9000d541c"
+      "bytes": 1693,
+      "sha256": "0b2235a021a6a94dc06228dbbbce4d6a212168845d0918dac9c09b2fde0ed8c0"
     },
     "codec-worker.js": {
-      "bytes": 3104,
-      "sha256": "9f67e90d31d5a274d828f375c925ffd93f1f9f034485d459c7adea148d1b2572"
+      "bytes": 4875,
+      "sha256": "a0211c13fed00e5a7fa0ac2d3cbb2aae0141f224be55e48ccf14174a8a9095a8"
     },
     "index.html": {
       "bytes": 32071,
@@ -74,6 +74,10 @@
     "vendor/pyodide/pyodide.asm.wasm": {
       "bytes": 8645967,
       "sha256": "5effb6a1a6cc4a1a85bec4622701aa797c031e1de923cbbaf2ad47abdc4ab325"
+    },
+    "vendor/pyodide/pyodide.asm.wasm.gz": {
+      "bytes": 2817221,
+      "sha256": "a3c4f61dee80427d3354f98d86f823d2e36632ef43110ddfb0162585e453db26"
     },
     "vendor/pyodide/pyodide.js": {
       "bytes": 17331,
