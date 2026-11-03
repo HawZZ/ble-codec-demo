@@ -1,4 +1,119 @@
 {
+  "id": "pump-service-ble-mapping",
+  "version": "2026-11-03-split1",
+  "description": "定义BLE应用层原指令地址、字段编码和交互方式，通过schema_ref引用独立物模型；本文件不重复内嵌物模型。此为拆分定义文档格式，不冒用旧版含内嵌物模型的Demo字典格式。",
+  "sourceRevisions": {
+    "application": 4456,
+    "pump_service": 107,
+    "sid_registry": 112
+  },
+  "provenance": {
+    "migratedFrom": "ble-mapping-definition/1.0",
+    "sourceDefinitionMetadata": {
+      "common": {
+        "pdu": {
+          "layout": [
+            "SID:uint8",
+            "CID:uint8",
+            "TLV[]"
+          ],
+          "max_bytes": 2048,
+          "scope": "应用层PDU；GATT UUID、链路层帧和真实固件身份未定义于本交付。"
+        },
+        "tlv": {
+          "type_bytes": 1,
+          "logical_type_bits": "bit0..6",
+          "container_flag": "bit7=1表示Value由子TLV组成",
+          "length": {
+            "encoding": "大端base128变长无符号数，高7位在前；bit7表示后续字节",
+            "bytes": [
+              1,
+              2
+            ],
+            "value": "仅Value字节数，不含Type及Length",
+            "range": [
+              0,
+              16383
+            ],
+            "canonical": "0..127使用1字节，128..16383使用2字节；不使用多余前导字节。"
+          },
+          "addresses": "logical_path去除容器标志；wire_path为各层实际Type字节，不代表连续字节偏移。Type仅在父容器内寻址。",
+          "required": "true必填、false可选；字段组约束见各节点groups。"
+        },
+        "wire_types": {
+          "u8": {
+            "bytes": 1,
+            "encoding": "无符号整数"
+          },
+          "u16": {
+            "bytes": 2,
+            "encoding": "无符号整数",
+            "byte_order": "big-endian"
+          },
+          "utf8": {
+            "encoding": "UTF-8",
+            "length_unit": "编码后的字节数"
+          },
+          "bytes": {
+            "encoding": "JSON为十六进制字符串，每2字符对应1字节；线上传输原始字节"
+          },
+          "object": {
+            "encoding": "一个含子TLV的对象容器"
+          },
+          "array": {
+            "encoding": "一个数组容器，其Value由children中元素对象的多个TLV组成"
+          },
+          "repeated_object": {
+            "encoding": "数组每个元素编码为同Type的对象TLV，直接置于父容器，不新增数组包装TLV"
+          }
+        },
+        "numeric_conversion": {
+          "formula": "model_value = wire_value * scale + offset",
+          "scale_default": "1",
+          "offset_default": "0",
+          "integer_constraint": "转换后的线值必须能被字段整数线宽精确表达"
+        },
+        "field_groups": {
+          "at_least_one": "指定业务字段至少一个；side不计入该业务字段组",
+          "all_or_none": "指定字段必须同时存在或同时省略"
+        },
+        "interaction_types": {
+          "request_response": "APP下发请求，设备返回已声明的数据或结果；不据无标记报文宣称精确关联",
+          "query_and_report": "查询返回与主动上报共用数据布局；只能按SID/CID识别，无法仅凭报文区分两者",
+          "receive_only": "仅接收设备上行，不生成请求；0C因查询请求格式未定义，目前只映射已定义上报"
+        },
+        "public_result": {
+          "id": "R3.common_u32_7f",
+          "wire_type": "0x7F",
+          "length": 4,
+          "value_encoding": "uint32 big-endian",
+          "success_code": 100000,
+          "success_pdu_example": "10 15 7F 04 00 01 86 A0",
+          "error_code_policy": "保留公共组件实际返回的原始结果码，本文件不补造未列出的错误码枚举",
+          "model_binding": "交互结果元数据，不作为业务属性或事件字段"
+        },
+        "empty_reply": {
+          "meaning": "仅表示空回包，不能推断业务成功",
+          "result_known": false
+        },
+        "correlation": {
+          "unmarked": "协议未携带用于精确关联的请求标记",
+          "none": "纯上行，无请求关联",
+          "timeout_ms": null,
+          "timeout_note": "规范未定义，不默认补超时"
+        },
+        "property_updates": {
+          "merge": "仅更新本次携带的字段；未携带字段不补默认值、不清空已有状态",
+          "identity_note": "按侧别、对象身份及业务规则归并；本文件不将解码自动等同于完整状态替换。"
+        },
+        "availability": {
+          "active": "保留当前可映射协议定义，不代表真实固件已经验证支持",
+          "suspended": "定义保留，禁止下发及作为已支持能力启用"
+        }
+      },
+      "thing_model_ref": "物模型定义.json"
+    }
+  },
   "format": "ble-thing-mapping/1",
   "commands": [
     {
@@ -7,14 +122,14 @@
         "kind": "service",
         "identifier": "set_common_parameters"
       },
-      "sid": "10",
-      "cid": "01",
+      "sid": "0x10",
+      "cid": "0x01",
       "interaction": "request_response",
       "receiveVariants": [
         "result"
       ],
       "correlation": "unmarked",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "active",
       "request": [
         {
@@ -68,7 +183,8 @@
             "wear_detect_enable"
           ]
         }
-      ]
+      ],
+      "resultSuccessCode": 100000
     },
     {
       "id": "get_common_status",
@@ -76,15 +192,15 @@
         "kind": "service",
         "identifier": "get_common_status"
       },
-      "sid": "10",
-      "cid": "02",
+      "sid": "0x10",
+      "cid": "0x02",
       "interaction": "query_and_report",
       "receiveVariants": [
         "incoming",
         "result"
       ],
       "correlation": "unmarked",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "active",
       "request": [
         {
@@ -145,7 +261,14 @@
           "scale": "1",
           "offset": "0"
         }
-      ]
+      ],
+      "propertyUpdates": [
+        {
+          "from": "common_status_list",
+          "to": "common_status_list"
+        }
+      ],
+      "resultSuccessCode": 100000
     },
     {
       "id": "set_pump_parameters",
@@ -153,15 +276,15 @@
         "kind": "service",
         "identifier": "set_pump_parameters"
       },
-      "sid": "10",
-      "cid": "03",
+      "sid": "0x10",
+      "cid": "0x03",
       "interaction": "request_response",
       "receiveVariants": [
         "result",
         "empty"
       ],
       "correlation": "unmarked",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "active",
       "request": [
         {
@@ -251,7 +374,8 @@
             "pump_type"
           ]
         }
-      ]
+      ],
+      "resultSuccessCode": 100000
     },
     {
       "id": "get_pump_status",
@@ -259,15 +383,15 @@
         "kind": "service",
         "identifier": "get_pump_status"
       },
-      "sid": "10",
-      "cid": "04",
+      "sid": "0x10",
+      "cid": "0x04",
       "interaction": "query_and_report",
       "receiveVariants": [
         "incoming",
         "result"
       ],
       "correlation": "unmarked",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "active",
       "request": [
         {
@@ -376,7 +500,14 @@
             "pump_elapsed_time"
           ]
         }
-      ]
+      ],
+      "propertyUpdates": [
+        {
+          "from": "pump_status_list",
+          "to": "pump_status_list"
+        }
+      ],
+      "resultSuccessCode": 100000
     },
     {
       "id": "set_vibration_parameters",
@@ -384,14 +515,14 @@
         "kind": "service",
         "identifier": "set_vibration_parameters"
       },
-      "sid": "10",
-      "cid": "05",
+      "sid": "0x10",
+      "cid": "0x05",
       "interaction": "request_response",
       "receiveVariants": [
         "result"
       ],
       "correlation": "unmarked",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "suspended",
       "request": [
         {
@@ -450,7 +581,8 @@
           "scale": "1",
           "offset": "0"
         }
-      ]
+      ],
+      "resultSuccessCode": 100000
     },
     {
       "id": "get_vibration_status",
@@ -458,15 +590,15 @@
         "kind": "service",
         "identifier": "get_vibration_status"
       },
-      "sid": "10",
-      "cid": "06",
+      "sid": "0x10",
+      "cid": "0x06",
       "interaction": "query_and_report",
       "receiveVariants": [
         "incoming",
         "result"
       ],
       "correlation": "unmarked",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "suspended",
       "request": [
         {
@@ -535,7 +667,14 @@
           "scale": "1",
           "offset": "0"
         }
-      ]
+      ],
+      "propertyUpdates": [
+        {
+          "from": "vibration_status_list",
+          "to": "vibration_status_list"
+        }
+      ],
+      "resultSuccessCode": 100000
     },
     {
       "id": "set_light_parameters",
@@ -543,14 +682,14 @@
         "kind": "service",
         "identifier": "set_light_parameters"
       },
-      "sid": "10",
-      "cid": "07",
+      "sid": "0x10",
+      "cid": "0x07",
       "interaction": "request_response",
       "receiveVariants": [
         "result"
       ],
       "correlation": "unmarked",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "active",
       "request": [
         {
@@ -630,7 +769,8 @@
             "light_duration_time"
           ]
         }
-      ]
+      ],
+      "resultSuccessCode": 100000
     },
     {
       "id": "get_light_status",
@@ -638,15 +778,15 @@
         "kind": "service",
         "identifier": "get_light_status"
       },
-      "sid": "10",
-      "cid": "08",
+      "sid": "0x10",
+      "cid": "0x08",
       "interaction": "query_and_report",
       "receiveVariants": [
         "incoming",
         "result"
       ],
       "correlation": "unmarked",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "active",
       "request": [
         {
@@ -744,7 +884,14 @@
             "light_duration_time"
           ]
         }
-      ]
+      ],
+      "propertyUpdates": [
+        {
+          "from": "light_status_list",
+          "to": "light_status_list"
+        }
+      ],
+      "resultSuccessCode": 100000
     },
     {
       "id": "set_heat_parameters",
@@ -752,14 +899,14 @@
         "kind": "service",
         "identifier": "set_heat_parameters"
       },
-      "sid": "10",
-      "cid": "09",
+      "sid": "0x10",
+      "cid": "0x09",
       "interaction": "request_response",
       "receiveVariants": [
         "result"
       ],
       "correlation": "unmarked",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "active",
       "request": [
         {
@@ -810,7 +957,8 @@
           "scale": "1",
           "offset": "0"
         }
-      ]
+      ],
+      "resultSuccessCode": 100000
     },
     {
       "id": "get_heat_status",
@@ -818,15 +966,15 @@
         "kind": "service",
         "identifier": "get_heat_status"
       },
-      "sid": "10",
-      "cid": "0A",
+      "sid": "0x10",
+      "cid": "0x0A",
       "interaction": "query_and_report",
       "receiveVariants": [
         "incoming",
         "result"
       ],
       "correlation": "unmarked",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "active",
       "request": [
         {
@@ -887,7 +1035,14 @@
           "scale": "1",
           "offset": "0"
         }
-      ]
+      ],
+      "propertyUpdates": [
+        {
+          "from": "heat_status_list",
+          "to": "heat_status_list"
+        }
+      ],
+      "resultSuccessCode": 100000
     },
     {
       "id": "set_perception_parameters",
@@ -895,14 +1050,14 @@
         "kind": "service",
         "identifier": "set_perception_parameters"
       },
-      "sid": "10",
-      "cid": "0B",
+      "sid": "0x10",
+      "cid": "0x0B",
       "interaction": "request_response",
       "receiveVariants": [
         "result"
       ],
       "correlation": "unmarked",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "active",
       "request": [
         {
@@ -965,22 +1120,23 @@
             "full_milk_notify_enable"
           ]
         }
-      ]
+      ],
+      "resultSuccessCode": 100000
     },
     {
       "id": "get_perception_status",
       "target": {
-        "kind": "service",
-        "identifier": "get_perception_status"
+        "kind": "event",
+        "identifier": "perception_status_report"
       },
-      "sid": "10",
-      "cid": "0C",
+      "sid": "0x10",
+      "cid": "0x0C",
       "interaction": "receive_only",
       "receiveVariants": [
         "incoming"
       ],
       "correlation": "none",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim; query request not specified, report only",
+      "source": "",
       "availability": "active",
       "incoming": [
         {
@@ -1055,6 +1211,15 @@
           "scale": "1",
           "offset": "0"
         }
+      ],
+      "propertyUpdates": [
+        {
+          "from": "perception_list",
+          "to": "perception_list"
+        }
+      ],
+      "notes": [
+        "过滤表示本次上报可仅携带部分字段，结构保持不变。查询请求字段尚未定义；不生成旧临时空GET或下行过滤参数。"
       ]
     },
     {
@@ -1063,14 +1228,14 @@
         "kind": "service",
         "identifier": "set_mode_unit_parameters"
       },
-      "sid": "10",
-      "cid": "0D",
+      "sid": "0x10",
+      "cid": "0x0D",
       "interaction": "request_response",
       "receiveVariants": [
         "result"
       ],
       "correlation": "unmarked",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "active",
       "request": [
         {
@@ -1177,7 +1342,11 @@
           "scale": "1",
           "offset": "0"
         }
-      ]
+      ],
+      "notes": [
+        "side按表Type02；多个83是模式单元对象数组，不是冲突或额外层级。仅接受已定义的driver_type=0。"
+      ],
+      "resultSuccessCode": 100000
     },
     {
       "id": "get_mode_unit_parameters",
@@ -1185,15 +1354,15 @@
         "kind": "service",
         "identifier": "get_mode_unit_parameters"
       },
-      "sid": "10",
-      "cid": "0E",
+      "sid": "0x10",
+      "cid": "0x0E",
       "interaction": "request_response",
       "receiveVariants": [
         "incoming",
         "result"
       ],
       "correlation": "unmarked",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "active",
       "request": [
         {
@@ -1318,7 +1487,17 @@
           "scale": "1",
           "offset": "0"
         }
-      ]
+      ],
+      "propertyUpdates": [
+        {
+          "from": "mode_unit_list",
+          "to": "mode_unit_list"
+        }
+      ],
+      "notes": [
+        "side按表Type02；多个83是模式单元对象数组，不是冲突或额外层级。仅接受已定义的driver_type=0。"
+      ],
+      "resultSuccessCode": 100000
     },
     {
       "id": "set_mode_parameters",
@@ -1326,14 +1505,14 @@
         "kind": "service",
         "identifier": "set_mode_parameters"
       },
-      "sid": "10",
-      "cid": "0F",
+      "sid": "0x10",
+      "cid": "0x0F",
       "interaction": "request_response",
       "receiveVariants": [
         "result"
       ],
       "correlation": "unmarked",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "active",
       "request": [
         {
@@ -1416,7 +1595,8 @@
           "scale": "1",
           "offset": "0"
         }
-      ]
+      ],
+      "resultSuccessCode": 100000
     },
     {
       "id": "get_mode_parameters",
@@ -1424,15 +1604,15 @@
         "kind": "service",
         "identifier": "get_mode_parameters"
       },
-      "sid": "10",
-      "cid": "10",
+      "sid": "0x10",
+      "cid": "0x10",
       "interaction": "request_response",
       "receiveVariants": [
         "incoming",
         "result"
       ],
       "correlation": "unmarked",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "active",
       "request": [
         {
@@ -1533,7 +1713,14 @@
           "scale": "1",
           "offset": "0"
         }
-      ]
+      ],
+      "propertyUpdates": [
+        {
+          "from": "mode_list",
+          "to": "mode_list"
+        }
+      ],
+      "resultSuccessCode": 100000
     },
     {
       "id": "set_rhythm_parameters",
@@ -1541,14 +1728,14 @@
         "kind": "service",
         "identifier": "set_rhythm_parameters"
       },
-      "sid": "10",
-      "cid": "11",
+      "sid": "0x10",
+      "cid": "0x11",
       "interaction": "request_response",
       "receiveVariants": [
         "result"
       ],
       "correlation": "unmarked",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "active",
       "request": [
         {
@@ -1631,7 +1818,8 @@
           "scale": "1",
           "offset": "0"
         }
-      ]
+      ],
+      "resultSuccessCode": 100000
     },
     {
       "id": "get_rhythm_parameters",
@@ -1639,15 +1827,15 @@
         "kind": "service",
         "identifier": "get_rhythm_parameters"
       },
-      "sid": "10",
-      "cid": "12",
+      "sid": "0x10",
+      "cid": "0x12",
       "interaction": "request_response",
       "receiveVariants": [
         "incoming",
         "result"
       ],
       "correlation": "unmarked",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "active",
       "request": [
         {
@@ -1748,7 +1936,14 @@
           "scale": "1",
           "offset": "0"
         }
-      ]
+      ],
+      "propertyUpdates": [
+        {
+          "from": "rhythm_list",
+          "to": "rhythm_list"
+        }
+      ],
+      "resultSuccessCode": 100000
     },
     {
       "id": "get_rhythm_status",
@@ -1756,15 +1951,15 @@
         "kind": "service",
         "identifier": "get_rhythm_status"
       },
-      "sid": "10",
-      "cid": "13",
+      "sid": "0x10",
+      "cid": "0x13",
       "interaction": "query_and_report",
       "receiveVariants": [
         "incoming",
         "result"
       ],
       "correlation": "unmarked",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "active",
       "request": [
         {
@@ -1841,22 +2036,29 @@
           "scale": "1",
           "offset": "0"
         }
-      ]
+      ],
+      "propertyUpdates": [
+        {
+          "from": "rhythm_status_list",
+          "to": "rhythm_status_list"
+        }
+      ],
+      "resultSuccessCode": 100000
     },
     {
       "id": "report_raw_algorithm_data",
       "target": {
-        "kind": "service",
-        "identifier": "report_raw_algorithm_data"
+        "kind": "event",
+        "identifier": "raw_algorithm_data"
       },
-      "sid": "10",
-      "cid": "14",
+      "sid": "0x10",
+      "cid": "0x14",
       "interaction": "receive_only",
       "receiveVariants": [
         "incoming"
       ],
       "correlation": "none",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "active",
       "incoming": [
         {
@@ -1892,6 +2094,15 @@
           "offset": "0",
           "maxBytes": "63"
         }
+      ],
+      "propertyUpdates": [
+        {
+          "from": "raw_data_list",
+          "to": "raw_data_list"
+        }
+      ],
+      "notes": [
+        "严格按表81→多个82→03可选side及04必填63B数据；内部算法布局未定义，整体保留原始字节。"
       ]
     },
     {
@@ -1900,14 +2111,14 @@
         "kind": "service",
         "identifier": "set_raw_algorithm_report"
       },
-      "sid": "10",
-      "cid": "15",
+      "sid": "0x10",
+      "cid": "0x15",
       "interaction": "request_response",
       "receiveVariants": [
         "result"
       ],
       "correlation": "unmarked",
-      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "source": "",
       "availability": "active",
       "request": [
         {
@@ -1942,7 +2153,23 @@
           "scale": "1",
           "offset": "0"
         }
-      ]
+      ],
+      "resultSuccessCode": 100000
     }
+  ],
+  "modelRef": {
+    "id": "pump-service",
+    "version": "2026-11-03-split1",
+    "sha256": "97a075438802c908f370f1e433169ba23aa2d015a7efcdc332bf84288009fd38"
+  },
+  "requiredCapabilities": [
+    "model-reference/1",
+    "nested-tlv/1",
+    "numeric-defaults/1",
+    "property-updates/1",
+    "receive-only/1",
+    "repeated-object/1",
+    "result-success-code/1",
+    "tlv-length-1-2/1"
   ]
 }

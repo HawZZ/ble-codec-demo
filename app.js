@@ -615,9 +615,10 @@
 
   function exportPair() {
     if (!hasCompiledDictionary() || !state.compile.files) return;
-    downloadJson('thing-model', state.compile.files.model);
-    downloadJson('ble-mapping', state.compile.files.mapping);
-    showToast('已导出物模型和BLE映射两个JSON；浏览器如提示，请允许下载多个文件。');
+    const files = clone(state.compile.files);
+    $('downloadModelBtn').onclick = () => { downloadJson('thing-model', files.model); showToast('已下载物模型；请继续下载本次配套的BLE映射。'); };
+    $('downloadMappingBtn').onclick = () => { downloadJson('ble-mapping', files.mapping); showToast('已下载BLE映射；请与同次导出的物模型配套使用。'); };
+    $('exportPairDialog').showModal();
   }
 
   async function importPair() {
@@ -631,7 +632,12 @@
     errorBox.hidden = true;
     try {
       if (model.size + mapping.size > 2 * 1024 * 1024) throw new ApiError('BODY_LENGTH', '两个文件合计须在2MiB以内', 400);
-      const result = await postJson(API.import, {kind: 'pair', modelText: await model.text(), text: await mapping.text()});
+      const modelText = await model.text(), mappingText = await mapping.text();
+      for (const [label, text] of [['物模型', modelText], ['BLE映射', mappingText]]) {
+        try { JSON.parse(text.replace(/^\uFEFF/, '')); }
+        catch (error) { throw new ApiError('IMPORT_JSON', `${label}文件不是有效JSON（读取到${text.length}个字符，${error.message}）；请重新选择完整的UTF-8 JSON文件`, 400); }
+      }
+      const result = await postJson(API.import, {kind: 'pair', modelText, text: mappingText});
       applyWorkspace(result.workspace, '导入 · 物模型与BLE映射');
       closeImportDialog(); activateTab('config'); showToast('物模型与映射导入成功。');
     } catch (error) {
@@ -951,7 +957,7 @@
   function syncModelJsonText() {
     const editor = $('modelJson');
     if (!editor) return;
-    const model = clone(state.workspace.model);
+    const model = {...clone(state.workspace.model_metadata || {}), ...clone(state.workspace.model)};
     model.services = model.methods;
     delete model.methods;
     editor.value = pretty(model);
@@ -984,7 +990,8 @@
       if (!isObject(parsed) || !isObject(parsed.properties) || !isObject(parsed.methods) || !isObject(parsed.events)) {
         throw new Error('模型必须包含 properties、services、events 三个对象');
       }
-      state.workspace.model = parsed;
+      state.workspace.model_metadata = Object.fromEntries(Object.entries(parsed).filter(([key]) => !['properties', 'methods', 'events'].includes(key)));
+      state.workspace.model = {properties: parsed.properties, methods: parsed.methods, events: parsed.events};
       state.modelJsonDirty = false;
       markWorkspaceEdited();
       renderModelEditor();
@@ -1916,7 +1923,7 @@
     $('resultDirection').textContent = state.lab.direction === 'down' ? '下行' : '上行';
     $('resultHex').textContent = result.hex || '';
     $('resultBits').textContent = result.bits || '';
-    $('resultModelJson').textContent = pretty(result.model_json ?? null);
+    $('resultModelJson').textContent = pretty(result.thing_model_json ?? result.model_json ?? null);
     $('hexResultLabel').textContent = encodeMode ? '应用层 HEX · 编码结果' : '应用层 HEX · 原始 PDU';
     $('modelResultLabel').textContent = encodeMode ? '转换复核 JSON' : '物模型数据 JSON';
     $('modelResultHint').textContent = result.operation ? `指令：${result.operation}` : '由当前工作区重新编译后解析';
@@ -2347,6 +2354,8 @@
     $('compileBtn').addEventListener('click', () => compileWorkspace(true));
     $('exportWorkspaceBtn').addEventListener('click', exportWorkspace);
     $('exportPairBtn').addEventListener('click', exportPair);
+    $('closeExportPairBtn').addEventListener('click', () => $('exportPairDialog').close());
+    $('doneExportPairBtn').addEventListener('click', () => $('exportPairDialog').close());
     $('importPairBtn').addEventListener('click', importPair);
     for (const id of ['pairModel', 'pairMapping']) $(id).addEventListener('change', () => { $(id + 'Name').textContent = $(id).files?.[0]?.name || '请选择JSON文件'; });
     $('exportDictionaryBtn').addEventListener('click', exportDictionary);
@@ -2450,7 +2459,7 @@
       if (state.lab.result?.hex) copyText(state.lab.result.hex, 'HEX 已复制。');
     });
     $('copyModelBtn').addEventListener('click', () => {
-      if (state.lab.result) copyText(pretty(state.lab.result.model_json ?? null), '模型 JSON 已复制。');
+      if (state.lab.result) copyText(pretty(state.lab.result.thing_model_json ?? state.lab.result.model_json ?? null), '模型 JSON 已复制。');
     });
     $('clearResultBtn').addEventListener('click', () => clearLabResult('idle'));
 

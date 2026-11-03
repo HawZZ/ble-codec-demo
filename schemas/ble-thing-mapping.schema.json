@@ -1,0 +1,444 @@
+{
+  "type": "object",
+  "properties": {
+    "format": {
+      "const": "ble-thing-mapping/1"
+    },
+    "id": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+          },
+          "sid": {
+            "type": "string",
+            "pattern": "^(0x)?[0-9a-fA-F]{1,2}$"
+          },
+          "cid": {
+            "type": "string",
+            "pattern": "^(0x)?[0-9a-fA-F]{1,2}$"
+          },
+          "target": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "enum": [
+                  "property",
+                  "service",
+                  "event"
+                ]
+              },
+              "identifier": {
+                "type": "string",
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+              },
+              "behavior": {
+                "enum": [
+                  "read",
+                  "write",
+                  "report"
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "identifier"
+            ],
+            "additionalProperties": false,
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "kind": {
+                      "const": "property"
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "behavior"
+                  ]
+                },
+                "else": {
+                  "not": {
+                    "required": [
+                      "behavior"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "interaction": {
+            "enum": [
+              "request_response",
+              "query_and_report",
+              "one_way",
+              "receive_only"
+            ]
+          },
+          "receiveVariants": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "incoming",
+                "result",
+                "empty"
+              ]
+            },
+            "uniqueItems": true
+          },
+          "correlation": {
+            "enum": [
+              "none",
+              "unmarked"
+            ]
+          },
+          "timeoutMs": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "source": {
+            "type": "string"
+          },
+          "availability": {
+            "enum": [
+              "active",
+              "suspended"
+            ]
+          },
+          "request": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "tlv": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "wireType": {
+                  "enum": [
+                    "group",
+                    "array",
+                    "object",
+                    "repeated_object",
+                    "bool",
+                    "utf8",
+                    "bytes",
+                    "u8",
+                    "u8[]",
+                    "u16",
+                    "u16[]",
+                    "u32",
+                    "u32[]",
+                    "i8",
+                    "i8[]",
+                    "i16",
+                    "i16[]",
+                    "i32",
+                    "i32[]",
+                    "f32",
+                    "f32[]",
+                    "f64",
+                    "f64[]"
+                  ]
+                },
+                "required": {
+                  "type": "boolean"
+                },
+                "scale": {
+                  "oneOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^[-+]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][-+]?\\d+)?$"
+                    }
+                  ]
+                },
+                "offset": {
+                  "oneOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^[-+]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][-+]?\\d+)?$"
+                    }
+                  ]
+                },
+                "maxBytes": {
+                  "oneOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 16383
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^[0-9]+$"
+                    }
+                  ]
+                },
+                "length": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "field",
+                "tlv",
+                "wireType"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "incoming": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "tlv": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "wireType": {
+                  "enum": [
+                    "group",
+                    "array",
+                    "object",
+                    "repeated_object",
+                    "bool",
+                    "utf8",
+                    "bytes",
+                    "u8",
+                    "u8[]",
+                    "u16",
+                    "u16[]",
+                    "u32",
+                    "u32[]",
+                    "i8",
+                    "i8[]",
+                    "i16",
+                    "i16[]",
+                    "i32",
+                    "i32[]",
+                    "f32",
+                    "f32[]",
+                    "f64",
+                    "f64[]"
+                  ]
+                },
+                "required": {
+                  "type": "boolean"
+                },
+                "scale": {
+                  "oneOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^[-+]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][-+]?\\d+)?$"
+                    }
+                  ]
+                },
+                "offset": {
+                  "oneOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^[-+]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][-+]?\\d+)?$"
+                    }
+                  ]
+                },
+                "maxBytes": {
+                  "oneOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 16383
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^[0-9]+$"
+                    }
+                  ]
+                },
+                "length": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "field",
+                "tlv",
+                "wireType"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "constraints": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "enum": [
+                    "request",
+                    "incoming"
+                  ]
+                },
+                "container": {
+                  "type": "string"
+                },
+                "rule": {
+                  "enum": [
+                    "at_least_one",
+                    "all_or_none"
+                  ]
+                },
+                "fields": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                  },
+                  "minItems": 1,
+                  "uniqueItems": true
+                }
+              },
+              "required": [
+                "role",
+                "container",
+                "rule",
+                "fields"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "propertyUpdates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "to": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                }
+              },
+              "required": [
+                "from",
+                "to"
+              ],
+              "additionalProperties": false
+            },
+            "uniqueItems": true
+          },
+          "resultSuccessCode": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4294967295
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "sid",
+          "cid",
+          "target",
+          "interaction",
+          "receiveVariants"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 2000
+    },
+    "modelRef": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "requiredCapabilities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "sourceRevisions": {
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "integer"
+        ]
+      }
+    },
+    "provenance": {
+      "type": "object"
+    },
+    "identity": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "format",
+    "commands",
+    "modelRef",
+    "requiredCapabilities"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:momcozy:ble-thing-mapping:1"
+}

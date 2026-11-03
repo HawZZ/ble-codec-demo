@@ -6,9 +6,9 @@
   <meta name="color-scheme" content="light">
   <meta name="description" content="BLE 应用层 PDU 离线编解码实验台。">
   <title>BLE 编解码实验台</title>
-  <link rel="stylesheet" href="./app.css?v=aedd6d994bb5f2ba">
-  <script src="./browser-runtime.js?v=aedd6d994bb5f2ba" defer></script>
-  <script src="./app.js?v=aedd6d994bb5f2ba" defer></script>
+  <link rel="stylesheet" href="./app.css?v=9c5cdcad6becb126">
+  <script src="./browser-runtime.js?v=9c5cdcad6becb126" defer></script>
+  <script src="./app.js?v=9c5cdcad6becb126" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">跳到主要内容</a>
@@ -471,6 +471,7 @@
           <label class="upload-row" for="pairMapping"><span class="file-kind">MAP</span><span class="upload-copy"><strong>2. BLE映射 JSON</strong><small id="pairMappingName">ble-thing-mapping/1</small></span><span class="file-action">选择</span><input id="pairMapping" type="file" accept=".json,application/json"></label>
         </div>
         <button id="importPairBtn" class="button button-accent" type="button">校验并导入两个JSON</button>
+        <p class="section-description">统一映射格式 ble-thing-mapping/1；兼容读取已交付的拆分定义文件，导出时统一转换。模型引用、字段约束及所需能力均会校验。</p>
         <p>CSV是可选的批量编辑方式；工作区用于恢复编辑，内部快照和测试报文用于研发验证，均不是额外交付要求。</p>
       </section>
       <details class="import-section"><summary>兼容导入：旧工作区、内部字典、单独模型及CSV</summary>
@@ -542,6 +543,21 @@
       <p>CSV 走当前工作区导入；成功响应会刷新全部编辑区。</p>
       <button class="button button-primary" id="doneImportBtn" type="button">完成</button>
     </div>
+  </dialog>
+
+  <dialog class="modal node-modal" id="exportPairDialog" aria-labelledby="exportPairTitle">
+    <div class="modal-head">
+      <div><p class="eyebrow">EXPORT</p><h2 id="exportPairTitle">下载物模型与BLE映射</h2><p>两个文件来自同一次校验。请分别下载并配套使用，系统已生成模型引用与能力声明。</p></div>
+      <button class="modal-close" id="closeExportPairBtn" type="button" aria-label="关闭导出窗口">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="upload-grid">
+        <button class="button button-outline" id="downloadModelBtn" type="button">1. 下载物模型 JSON</button>
+        <button class="button button-outline" id="downloadMappingBtn" type="button">2. 下载BLE映射 JSON</button>
+      </div>
+      <p class="section-description">物模型描述属性、服务和事件；映射保留原SID/CID、字段编码、交互及属性更新。文件缩进或键顺序变化不会造成模型内容校验失败。</p>
+    </div>
+    <div class="modal-foot"><p>日常接入只需要这两个文件。</p><button class="button button-primary" id="doneExportPairBtn" type="button">完成</button></div>
   </dialog>
 
   <dialog class="modal node-modal" id="nodeDialog" aria-labelledby="nodeDialogTitle">

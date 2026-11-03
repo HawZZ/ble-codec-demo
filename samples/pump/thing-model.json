@@ -1,4 +1,21 @@
 {
+  "id": "pump-service",
+  "description": "定义属性、服务和事件。字段采用JSON Schema表达；服务仅包含已定义请求的能力，上报单独定义事件。属性为设备数据结构，属性变更时仅合并本次实际携带的字段；不把缺失字段补为0或据此清空已有值。",
+  "schema_dialect": "https://json-schema.org/draft/2020-12/schema",
+  "version": "2026-11-03-split1",
+  "format": "thing-model-definition/1.0",
+  "notes": [
+    "振动相关服务按现有规范挂起，定义保留，availability=suspended；具体BLE地址见映射文档。",
+    "模式单元仅定义pump驱动0；driver_type=1专用数据尚未定义，不套用pump字段。",
+    "heat_level与flange_type的业务枚举未定义，仅保留当前数值类型及线宽可表达范围；实际支持值待补充。",
+    "数值默认步进仅是字段数值约束，不是步进电机字段定义。"
+  ],
+  "name": "Pump 物模型定义",
+  "numeric_step_defaults": {
+    "integer": 1,
+    "number": 0.1,
+    "explicit_constraint_takes_precedence": true
+  },
   "properties": {
     "common_status_list": {
       "type": "array",
@@ -907,7 +924,7 @@
   },
   "services": {
     "set_common_parameters": {
-      "name": "设置设备通用功能 (CID=0x01)",
+      "name": "设置设备通用功能",
       "input": {
         "type": "object",
         "properties": {
@@ -968,10 +985,11 @@
         "properties": {},
         "required": [],
         "additionalProperties": false
-      }
+      },
+      "availability": "active"
     },
     "get_common_status": {
-      "name": "获取设备通用状态 (CID=0x02)",
+      "name": "获取设备通用状态",
       "input": {
         "type": "object",
         "properties": {
@@ -1056,10 +1074,11 @@
           "common_status_list"
         ],
         "additionalProperties": false
-      }
+      },
+      "availability": "active"
     },
     "set_pump_parameters": {
-      "name": "设置设备吸乳工作参数 (CID=0x03)",
+      "name": "设置设备吸乳工作参数",
       "input": {
         "type": "object",
         "properties": {
@@ -1147,10 +1166,11 @@
         "properties": {},
         "required": [],
         "additionalProperties": false
-      }
+      },
+      "availability": "active"
     },
     "get_pump_status": {
-      "name": "获取设备吸乳工作状态 (CID=0x04)",
+      "name": "获取设备吸乳工作状态",
       "input": {
         "type": "object",
         "properties": {
@@ -1267,10 +1287,11 @@
           "pump_status_list"
         ],
         "additionalProperties": false
-      }
+      },
+      "availability": "active"
     },
     "set_vibration_parameters": {
-      "name": "设置设备振动参数 (CID=0x05，暂时挂起，当前不支持app设置震动参数)",
+      "name": "设置设备振动参数",
       "input": {
         "type": "object",
         "properties": {
@@ -1346,10 +1367,11 @@
         "properties": {},
         "required": [],
         "additionalProperties": false
-      }
+      },
+      "availability": "suspended"
     },
     "get_vibration_status": {
-      "name": "获取设备振动状态 (CID=0x06，同上)",
+      "name": "获取设备振动状态",
       "input": {
         "type": "object",
         "properties": {
@@ -1439,10 +1461,11 @@
           "vibration_status_list"
         ],
         "additionalProperties": false
-      }
+      },
+      "availability": "suspended"
     },
     "set_light_parameters": {
-      "name": "设置设备灯参数 (CID=0x07)",
+      "name": "设置设备灯参数",
       "input": {
         "type": "object",
         "properties": {
@@ -1530,10 +1553,11 @@
         "properties": {},
         "required": [],
         "additionalProperties": false
-      }
+      },
+      "availability": "active"
     },
     "get_light_status": {
-      "name": "获取设备灯状态 (CID=0x08)",
+      "name": "获取设备灯状态",
       "input": {
         "type": "object",
         "properties": {
@@ -1646,10 +1670,11 @@
           "light_status_list"
         ],
         "additionalProperties": false
-      }
+      },
+      "availability": "active"
     },
     "set_heat_parameters": {
-      "name": "设置设备加热参数 (CID=0x09)",
+      "name": "设置设备加热参数",
       "input": {
         "type": "object",
         "properties": {
@@ -1717,10 +1742,11 @@
         "properties": {},
         "required": [],
         "additionalProperties": false
-      }
+      },
+      "availability": "active"
     },
     "get_heat_status": {
-      "name": "获取设备加热状态 (CID=0x0A)",
+      "name": "获取设备加热状态",
       "input": {
         "type": "object",
         "properties": {
@@ -1802,10 +1828,11 @@
           "heat_status_list"
         ],
         "additionalProperties": false
-      }
+      },
+      "availability": "active"
     },
     "set_perception_parameters": {
-      "name": "设置设备状态感知数据 (CID=0x0B)",
+      "name": "设置设备状态感知数据",
       "input": {
         "type": "object",
         "properties": {
@@ -1877,113 +1904,11 @@
         "properties": {},
         "required": [],
         "additionalProperties": false
-      }
-    },
-    "get_perception_status": {
-      "name": "获取设备感知状态信息 (CID=0x0C)",
-      "input": {
-        "type": "object",
-        "properties": {},
-        "required": [],
-        "additionalProperties": false
       },
-      "output": {
-        "type": "object",
-        "properties": {
-          "perception_list": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "type": "object",
-              "properties": {
-                "pump_side": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 255,
-                  "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
-                  "enum": [
-                    0,
-                    1,
-                    2,
-                    3
-                  ],
-                  "multipleOf": 1
-                },
-                "milk_volume_notify_enable": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 255,
-                  "description": "使能和关闭奶量通知0x00: disable0x01: enable",
-                  "enum": [
-                    0,
-                    1
-                  ],
-                  "multipleOf": 1
-                },
-                "let_down_notify_enable": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 255,
-                  "description": "使能和关闭奶阵通知0x00: disable0x01: enable",
-                  "enum": [
-                    0,
-                    1
-                  ],
-                  "multipleOf": 1
-                },
-                "milk_volume": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 255,
-                  "description": "当前奶量（ml）",
-                  "multipleOf": 1
-                },
-                "let_down": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 255,
-                  "description": "奶阵 0x00=idle，0x01=start，0x02=active，0x03=end",
-                  "enum": [
-                    0,
-                    1,
-                    2,
-                    3
-                  ],
-                  "multipleOf": 1
-                },
-                "full_milk_notify_enable": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 255,
-                  "description": "使能和关闭满奶通知0x00: disable0x01: enable",
-                  "enum": [
-                    0,
-                    1
-                  ],
-                  "multipleOf": 1
-                },
-                "full_milk": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 255,
-                  "description": "满奶通知 0x01=is_full",
-                  "enum": [
-                    1
-                  ],
-                  "multipleOf": 1
-                }
-              },
-              "required": [],
-              "additionalProperties": false
-            }
-          }
-        },
-        "required": [],
-        "additionalProperties": false
-      }
+      "availability": "active"
     },
     "set_mode_unit_parameters": {
-      "name": "设置设备模式单元参数 (CID=0x0D)",
+      "name": "设置设备模式单元参数",
       "input": {
         "type": "object",
         "properties": {
@@ -2108,10 +2033,11 @@
         "properties": {},
         "required": [],
         "additionalProperties": false
-      }
+      },
+      "availability": "active"
     },
     "get_mode_unit_parameters": {
-      "name": "获取设备模式单元参数 (CID=0x0E)",
+      "name": "获取设备模式单元参数",
       "input": {
         "type": "object",
         "properties": {
@@ -2260,10 +2186,11 @@
           "mode_unit_list"
         ],
         "additionalProperties": false
-      }
+      },
+      "availability": "active"
     },
     "set_mode_parameters": {
-      "name": "设置设备模式参数 (CID=0x0F)",
+      "name": "设置设备模式参数",
       "input": {
         "type": "object",
         "properties": {
@@ -2352,10 +2279,11 @@
         "properties": {},
         "required": [],
         "additionalProperties": false
-      }
+      },
+      "availability": "active"
     },
     "get_mode_parameters": {
-      "name": "获取设备模式参数 (CID=0x10)",
+      "name": "获取设备模式参数",
       "input": {
         "type": "object",
         "properties": {
@@ -2465,10 +2393,11 @@
           "mode_list"
         ],
         "additionalProperties": false
-      }
+      },
+      "availability": "active"
     },
     "set_rhythm_parameters": {
-      "name": "设置设备韵律参数 (CID=0x11)",
+      "name": "设置设备韵律参数",
       "input": {
         "type": "object",
         "properties": {
@@ -2557,10 +2486,11 @@
         "properties": {},
         "required": [],
         "additionalProperties": false
-      }
+      },
+      "availability": "active"
     },
     "get_rhythm_parameters": {
-      "name": "获取设备韵律参数 (CID=0x12)",
+      "name": "获取设备韵律参数",
       "input": {
         "type": "object",
         "properties": {
@@ -2670,10 +2600,11 @@
           "rhythm_list"
         ],
         "additionalProperties": false
-      }
+      },
+      "availability": "active"
     },
     "get_rhythm_status": {
-      "name": "获取设备韵律状态 (CID=0x13)",
+      "name": "获取设备韵律状态",
       "input": {
         "type": "object",
         "properties": {
@@ -2770,59 +2701,11 @@
           "rhythm_status_list"
         ],
         "additionalProperties": false
-      }
-    },
-    "report_raw_algorithm_data": {
-      "name": "上报原始算法数据 (SID=0x10，CID=0x14)",
-      "input": {
-        "type": "object",
-        "properties": {},
-        "required": [],
-        "additionalProperties": false
       },
-      "output": {
-        "type": "object",
-        "properties": {
-          "raw_data_list": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "type": "object",
-              "properties": {
-                "pump_side": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 255,
-                  "description": "作用对象标识符（不携带，则默认全部）0x00: Left0x01: Right0x03: independence",
-                  "enum": [
-                    0,
-                    1,
-                    3
-                  ],
-                  "multipleOf": 1
-                },
-                "raw_algo_data": {
-                  "type": "string",
-                  "description": "算法原始数据",
-                  "minLength": 126,
-                  "maxLength": 126
-                }
-              },
-              "required": [
-                "raw_algo_data"
-              ],
-              "additionalProperties": false
-            }
-          }
-        },
-        "required": [
-          "raw_data_list"
-        ],
-        "additionalProperties": false
-      }
+      "availability": "active"
     },
     "set_raw_algorithm_report": {
-      "name": "上报原始算法数据开关 (SID=0x10，CID=0x15)",
+      "name": "上报原始算法数据开关",
       "input": {
         "type": "object",
         "properties": {
@@ -2874,7 +2757,8 @@
         "properties": {},
         "required": [],
         "additionalProperties": false
-      }
+      },
+      "availability": "active"
     }
   }
 }
