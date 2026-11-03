@@ -1,6 +1,8 @@
 /* Static hosting adapter. The existing Python engine runs in an isolated worker. */
 (() => {
-  const worker = new Worker(new URL('./codec-worker.js', document.currentScript.src));
+  const workerUrl = new URL('./codec-worker.js', document.currentScript.src);
+  workerUrl.search = new URL(document.currentScript.src).search;
+  const worker = new Worker(workerUrl);
   let sequence = 0;
   let failed = null;
   const pending = new Map();

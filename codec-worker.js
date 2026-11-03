@@ -34,7 +34,7 @@ async function initialize() {
   self.postMessage({ type: 'progress', message: '正在加载模型校验组件…' });
   await pyodide.loadPackage('jsonschema');
   self.postMessage({ type: 'progress', message: '正在载入字典编译器…' });
-  const response = await fetch('./runtime-files.json');
+  const response = await fetch('./runtime-files.json', { cache: 'no-store' });
   if (!response.ok) throw new Error('无法加载编解码引擎文件');
   const files = await response.json();
   for (const [path, text] of Object.entries(files)) {
@@ -57,7 +57,7 @@ def browser_dispatch(path, body):
             result = demo.import_content(request)
         elif path == '/api/demo/compile':
             dictionary = demo.compile_workspace(request.get('workspace'))
-            result = dict(ok=True, dictionary=dictionary, identity=dictionary['identity'], operations=demo.operation_descriptions(dictionary))
+            result = dict(ok=True, dictionary=dictionary, identity=dictionary['identity'], operations=demo.operation_descriptions(dictionary), files=demo.thing_mapping.export_pair(request['workspace']))
         elif path == '/api/demo/convert':
             result = demo.convert(request)
         else:

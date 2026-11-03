@@ -1,0 +1,1948 @@
+{
+  "format": "ble-thing-mapping/1",
+  "commands": [
+    {
+      "id": "set_common_parameters",
+      "target": {
+        "kind": "service",
+        "identifier": "set_common_parameters"
+      },
+      "sid": "10",
+      "cid": "01",
+      "interaction": "request_response",
+      "receiveVariants": [
+        "result"
+      ],
+      "correlation": "unmarked",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "active",
+      "request": [
+        {
+          "field": "common_setting_list",
+          "tlv": "01",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "common_setting_list[]",
+          "tlv": "01/02",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "common_setting_list[].pump_side",
+          "tlv": "01/02/03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "common_setting_list[].travel_lock_enable",
+          "tlv": "01/02/04",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "common_setting_list[].wear_detect_enable",
+          "tlv": "01/02/05",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        }
+      ],
+      "constraints": [
+        {
+          "role": "request",
+          "container": "01/02",
+          "rule": "at_least_one",
+          "fields": [
+            "travel_lock_enable",
+            "wear_detect_enable"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_common_status",
+      "target": {
+        "kind": "service",
+        "identifier": "get_common_status"
+      },
+      "sid": "10",
+      "cid": "02",
+      "interaction": "query_and_report",
+      "receiveVariants": [
+        "incoming",
+        "result"
+      ],
+      "correlation": "unmarked",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "active",
+      "request": [
+        {
+          "field": "pump_side",
+          "tlv": "03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        }
+      ],
+      "incoming": [
+        {
+          "field": "common_status_list",
+          "tlv": "01",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "common_status_list[]",
+          "tlv": "01/02",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "common_status_list[].pump_side",
+          "tlv": "01/02/03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "common_status_list[].connection_status",
+          "tlv": "01/02/04",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "common_status_list[].travel_lock_status",
+          "tlv": "01/02/05",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "common_status_list[].flange_type",
+          "tlv": "01/02/06",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        }
+      ]
+    },
+    {
+      "id": "set_pump_parameters",
+      "target": {
+        "kind": "service",
+        "identifier": "set_pump_parameters"
+      },
+      "sid": "10",
+      "cid": "03",
+      "interaction": "request_response",
+      "receiveVariants": [
+        "result",
+        "empty"
+      ],
+      "correlation": "unmarked",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "active",
+      "request": [
+        {
+          "field": "pump_setting_list",
+          "tlv": "01",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "pump_setting_list[]",
+          "tlv": "01/02",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "pump_setting_list[].pump_side",
+          "tlv": "01/02/03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "pump_setting_list[].pump_enable",
+          "tlv": "01/02/04",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "pump_setting_list[].pump_mode",
+          "tlv": "01/02/05",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "pump_setting_list[].pump_level",
+          "tlv": "01/02/06",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "pump_setting_list[].pump_freq",
+          "tlv": "01/02/07",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "pump_setting_list[].pump_type",
+          "tlv": "01/02/09",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        }
+      ],
+      "constraints": [
+        {
+          "role": "request",
+          "container": "01/02",
+          "rule": "at_least_one",
+          "fields": [
+            "pump_enable",
+            "pump_mode",
+            "pump_level",
+            "pump_freq",
+            "pump_type"
+          ]
+        },
+        {
+          "role": "request",
+          "container": "01/02",
+          "rule": "all_or_none",
+          "fields": [
+            "pump_mode",
+            "pump_type"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_pump_status",
+      "target": {
+        "kind": "service",
+        "identifier": "get_pump_status"
+      },
+      "sid": "10",
+      "cid": "04",
+      "interaction": "query_and_report",
+      "receiveVariants": [
+        "incoming",
+        "result"
+      ],
+      "correlation": "unmarked",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "active",
+      "request": [
+        {
+          "field": "pump_side",
+          "tlv": "03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        }
+      ],
+      "incoming": [
+        {
+          "field": "pump_status_list",
+          "tlv": "01",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "pump_status_list[]",
+          "tlv": "01/02",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "pump_status_list[].pump_side",
+          "tlv": "01/02/03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "pump_status_list[].pump_status",
+          "tlv": "01/02/04",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "pump_status_list[].pump_mode",
+          "tlv": "01/02/05",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "pump_status_list[].pump_level",
+          "tlv": "01/02/06",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "pump_status_list[].pump_freq",
+          "tlv": "01/02/07",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "pump_status_list[].pump_duration_time",
+          "tlv": "01/02/08",
+          "wireType": "u16",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "pump_status_list[].pump_type",
+          "tlv": "01/02/09",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "pump_status_list[].pump_elapsed_time",
+          "tlv": "01/02/0A",
+          "wireType": "u16",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        }
+      ],
+      "constraints": [
+        {
+          "role": "incoming",
+          "container": "01/02",
+          "rule": "at_least_one",
+          "fields": [
+            "pump_status",
+            "pump_mode",
+            "pump_level",
+            "pump_freq",
+            "pump_duration_time",
+            "pump_type",
+            "pump_elapsed_time"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "set_vibration_parameters",
+      "target": {
+        "kind": "service",
+        "identifier": "set_vibration_parameters"
+      },
+      "sid": "10",
+      "cid": "05",
+      "interaction": "request_response",
+      "receiveVariants": [
+        "result"
+      ],
+      "correlation": "unmarked",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "suspended",
+      "request": [
+        {
+          "field": "vibration_setting_list",
+          "tlv": "01",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "vibration_setting_list[]",
+          "tlv": "01/02",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "vibration_setting_list[].pump_side",
+          "tlv": "01/02/03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "vibration_setting_list[].vibration_enable",
+          "tlv": "01/02/04",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "vibration_setting_list[].vibration_mode",
+          "tlv": "01/02/05",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "vibration_setting_list[].vibration_freq",
+          "tlv": "01/02/06",
+          "wireType": "u16",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "vibration_setting_list[].vibration_duration_time",
+          "tlv": "01/02/07",
+          "wireType": "u16",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        }
+      ]
+    },
+    {
+      "id": "get_vibration_status",
+      "target": {
+        "kind": "service",
+        "identifier": "get_vibration_status"
+      },
+      "sid": "10",
+      "cid": "06",
+      "interaction": "query_and_report",
+      "receiveVariants": [
+        "incoming",
+        "result"
+      ],
+      "correlation": "unmarked",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "suspended",
+      "request": [
+        {
+          "field": "pump_side",
+          "tlv": "03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        }
+      ],
+      "incoming": [
+        {
+          "field": "vibration_status_list",
+          "tlv": "01",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "vibration_status_list[]",
+          "tlv": "01/02",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "vibration_status_list[].pump_side",
+          "tlv": "01/02/03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "vibration_status_list[].vibration_status",
+          "tlv": "01/02/04",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "vibration_status_list[].vibration_mode",
+          "tlv": "01/02/05",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "vibration_status_list[].vibration_freq",
+          "tlv": "01/02/06",
+          "wireType": "u16",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "vibration_status_list[].vibration_duration_time",
+          "tlv": "01/02/07",
+          "wireType": "u16",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        }
+      ]
+    },
+    {
+      "id": "set_light_parameters",
+      "target": {
+        "kind": "service",
+        "identifier": "set_light_parameters"
+      },
+      "sid": "10",
+      "cid": "07",
+      "interaction": "request_response",
+      "receiveVariants": [
+        "result"
+      ],
+      "correlation": "unmarked",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "active",
+      "request": [
+        {
+          "field": "light_setting_list",
+          "tlv": "01",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "light_setting_list[]",
+          "tlv": "01/02",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "light_setting_list[].pump_side",
+          "tlv": "01/02/03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "light_setting_list[].light_type",
+          "tlv": "01/02/04",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "light_setting_list[].light_enable",
+          "tlv": "01/02/05",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "light_setting_list[].light_adapt_enable",
+          "tlv": "01/02/06",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "light_setting_list[].light_brightness_level",
+          "tlv": "01/02/07",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "light_setting_list[].light_duration_time",
+          "tlv": "01/02/08",
+          "wireType": "u16",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        }
+      ],
+      "constraints": [
+        {
+          "role": "request",
+          "container": "01/02",
+          "rule": "at_least_one",
+          "fields": [
+            "light_enable",
+            "light_adapt_enable",
+            "light_brightness_level",
+            "light_duration_time"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_light_status",
+      "target": {
+        "kind": "service",
+        "identifier": "get_light_status"
+      },
+      "sid": "10",
+      "cid": "08",
+      "interaction": "query_and_report",
+      "receiveVariants": [
+        "incoming",
+        "result"
+      ],
+      "correlation": "unmarked",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "active",
+      "request": [
+        {
+          "field": "pump_side",
+          "tlv": "03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "light_type",
+          "tlv": "04",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        }
+      ],
+      "incoming": [
+        {
+          "field": "light_status_list",
+          "tlv": "01",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "light_status_list[]",
+          "tlv": "01/02",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "light_status_list[].pump_side",
+          "tlv": "01/02/03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "light_status_list[].light_type",
+          "tlv": "01/02/04",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "light_status_list[].light_status",
+          "tlv": "01/02/05",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "light_status_list[].light_adapt_status",
+          "tlv": "01/02/06",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "light_status_list[].light_brightness_level",
+          "tlv": "01/02/07",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "light_status_list[].light_duration_time",
+          "tlv": "01/02/08",
+          "wireType": "u16",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        }
+      ],
+      "constraints": [
+        {
+          "role": "incoming",
+          "container": "01/02",
+          "rule": "at_least_one",
+          "fields": [
+            "light_status",
+            "light_adapt_status",
+            "light_brightness_level",
+            "light_duration_time"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "set_heat_parameters",
+      "target": {
+        "kind": "service",
+        "identifier": "set_heat_parameters"
+      },
+      "sid": "10",
+      "cid": "09",
+      "interaction": "request_response",
+      "receiveVariants": [
+        "result"
+      ],
+      "correlation": "unmarked",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "active",
+      "request": [
+        {
+          "field": "heat_setting_list",
+          "tlv": "01",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "heat_setting_list[]",
+          "tlv": "01/02",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "heat_setting_list[].pump_side",
+          "tlv": "01/02/03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "heat_setting_list[].heat_enable",
+          "tlv": "01/02/04",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "heat_setting_list[].heat_level",
+          "tlv": "01/02/05",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "heat_setting_list[].heat_duration_time",
+          "tlv": "01/02/06",
+          "wireType": "u16",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        }
+      ]
+    },
+    {
+      "id": "get_heat_status",
+      "target": {
+        "kind": "service",
+        "identifier": "get_heat_status"
+      },
+      "sid": "10",
+      "cid": "0A",
+      "interaction": "query_and_report",
+      "receiveVariants": [
+        "incoming",
+        "result"
+      ],
+      "correlation": "unmarked",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "active",
+      "request": [
+        {
+          "field": "pump_side",
+          "tlv": "03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        }
+      ],
+      "incoming": [
+        {
+          "field": "heat_status_list",
+          "tlv": "01",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "heat_status_list[]",
+          "tlv": "01/02",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "heat_status_list[].pump_side",
+          "tlv": "01/02/03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "heat_status_list[].heat_status",
+          "tlv": "01/02/04",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "heat_status_list[].heat_level",
+          "tlv": "01/02/05",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "heat_status_list[].heat_duration_time",
+          "tlv": "01/02/06",
+          "wireType": "u16",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        }
+      ]
+    },
+    {
+      "id": "set_perception_parameters",
+      "target": {
+        "kind": "service",
+        "identifier": "set_perception_parameters"
+      },
+      "sid": "10",
+      "cid": "0B",
+      "interaction": "request_response",
+      "receiveVariants": [
+        "result"
+      ],
+      "correlation": "unmarked",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "active",
+      "request": [
+        {
+          "field": "perception_list",
+          "tlv": "01",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "perception_list[]",
+          "tlv": "01/02",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "perception_list[].pump_side",
+          "tlv": "01/02/03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "perception_list[].milk_volume_notify_enable",
+          "tlv": "01/02/04",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "perception_list[].let_down_notify_enable",
+          "tlv": "01/02/05",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "perception_list[].full_milk_notify_enable",
+          "tlv": "01/02/06",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        }
+      ],
+      "constraints": [
+        {
+          "role": "request",
+          "container": "01/02",
+          "rule": "at_least_one",
+          "fields": [
+            "milk_volume_notify_enable",
+            "let_down_notify_enable",
+            "full_milk_notify_enable"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "get_perception_status",
+      "target": {
+        "kind": "service",
+        "identifier": "get_perception_status"
+      },
+      "sid": "10",
+      "cid": "0C",
+      "interaction": "receive_only",
+      "receiveVariants": [
+        "incoming"
+      ],
+      "correlation": "none",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim; query request not specified, report only",
+      "availability": "active",
+      "incoming": [
+        {
+          "field": "perception_list",
+          "tlv": "01",
+          "wireType": "array",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "perception_list[]",
+          "tlv": "01/02",
+          "wireType": "object",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "perception_list[].pump_side",
+          "tlv": "01/02/03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "perception_list[].milk_volume_notify_enable",
+          "tlv": "01/02/04",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "perception_list[].let_down_notify_enable",
+          "tlv": "01/02/05",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "perception_list[].milk_volume",
+          "tlv": "01/02/06",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "perception_list[].let_down",
+          "tlv": "01/02/07",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "perception_list[].full_milk_notify_enable",
+          "tlv": "01/02/08",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "perception_list[].full_milk",
+          "tlv": "01/02/09",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        }
+      ]
+    },
+    {
+      "id": "set_mode_unit_parameters",
+      "target": {
+        "kind": "service",
+        "identifier": "set_mode_unit_parameters"
+      },
+      "sid": "10",
+      "cid": "0D",
+      "interaction": "request_response",
+      "receiveVariants": [
+        "result"
+      ],
+      "correlation": "unmarked",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "active",
+      "request": [
+        {
+          "field": "mode_unit_list",
+          "tlv": "01",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.pump_side",
+          "tlv": "01/02",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units",
+          "tlv": "01/03",
+          "wireType": "repeated_object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].mode_unit_id",
+          "tlv": "01/03/04",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].driver_type",
+          "tlv": "01/03/05",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].mode_unit_data_list",
+          "tlv": "01/03/06",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].mode_unit_data_list[]",
+          "tlv": "01/03/06/07",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].mode_unit_data_list[].pump_level",
+          "tlv": "01/03/06/07/08",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].mode_unit_data_list[].pump_duration_time",
+          "tlv": "01/03/06/07/09",
+          "wireType": "u16",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].mode_unit_data_list[].pump_delay_time",
+          "tlv": "01/03/06/07/0A",
+          "wireType": "u16",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].mode_unit_data_list[].pump_pwm",
+          "tlv": "01/03/06/07/0B",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].mode_unit_data_list[].value_duration_time",
+          "tlv": "01/03/06/07/0C",
+          "wireType": "u16",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].mode_unit_data_list[].value_delay_time",
+          "tlv": "01/03/06/07/0D",
+          "wireType": "u16",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        }
+      ]
+    },
+    {
+      "id": "get_mode_unit_parameters",
+      "target": {
+        "kind": "service",
+        "identifier": "get_mode_unit_parameters"
+      },
+      "sid": "10",
+      "cid": "0E",
+      "interaction": "request_response",
+      "receiveVariants": [
+        "incoming",
+        "result"
+      ],
+      "correlation": "unmarked",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "active",
+      "request": [
+        {
+          "field": "pump_side",
+          "tlv": "02",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_id",
+          "tlv": "04",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        }
+      ],
+      "incoming": [
+        {
+          "field": "mode_unit_list",
+          "tlv": "01",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.pump_side",
+          "tlv": "01/02",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units",
+          "tlv": "01/03",
+          "wireType": "repeated_object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].mode_unit_id",
+          "tlv": "01/03/04",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].driver_type",
+          "tlv": "01/03/05",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].mode_unit_data_list",
+          "tlv": "01/03/06",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].mode_unit_data_list[]",
+          "tlv": "01/03/06/07",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].mode_unit_data_list[].pump_level",
+          "tlv": "01/03/06/07/08",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].mode_unit_data_list[].pump_duration_time",
+          "tlv": "01/03/06/07/09",
+          "wireType": "u16",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].mode_unit_data_list[].pump_delay_time",
+          "tlv": "01/03/06/07/0A",
+          "wireType": "u16",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].mode_unit_data_list[].pump_pwm",
+          "tlv": "01/03/06/07/0B",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].mode_unit_data_list[].value_duration_time",
+          "tlv": "01/03/06/07/0C",
+          "wireType": "u16",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_unit_list.mode_units[].mode_unit_data_list[].value_delay_time",
+          "tlv": "01/03/06/07/0D",
+          "wireType": "u16",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        }
+      ]
+    },
+    {
+      "id": "set_mode_parameters",
+      "target": {
+        "kind": "service",
+        "identifier": "set_mode_parameters"
+      },
+      "sid": "10",
+      "cid": "0F",
+      "interaction": "request_response",
+      "receiveVariants": [
+        "result"
+      ],
+      "correlation": "unmarked",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "active",
+      "request": [
+        {
+          "field": "mode_list",
+          "tlv": "01",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_list[]",
+          "tlv": "01/02",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_list[].pump_side",
+          "tlv": "01/02/03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_list[].mode_id",
+          "tlv": "01/02/04",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_list[].mode_name",
+          "tlv": "01/02/05",
+          "wireType": "utf8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_list[].mode_unit_ref_list",
+          "tlv": "01/02/06",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_list[].mode_unit_ref_list[]",
+          "tlv": "01/02/06/07",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_list[].mode_unit_ref_list[].mode_unit_seq",
+          "tlv": "01/02/06/07/08",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_list[].mode_unit_ref_list[].mode_unit_id",
+          "tlv": "01/02/06/07/09",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_list[].mode_unit_ref_list[].mode_unit_count",
+          "tlv": "01/02/06/07/0A",
+          "wireType": "u16",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        }
+      ]
+    },
+    {
+      "id": "get_mode_parameters",
+      "target": {
+        "kind": "service",
+        "identifier": "get_mode_parameters"
+      },
+      "sid": "10",
+      "cid": "10",
+      "interaction": "request_response",
+      "receiveVariants": [
+        "incoming",
+        "result"
+      ],
+      "correlation": "unmarked",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "active",
+      "request": [
+        {
+          "field": "pump_side",
+          "tlv": "03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_id",
+          "tlv": "04",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        }
+      ],
+      "incoming": [
+        {
+          "field": "mode_list",
+          "tlv": "01",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_list[]",
+          "tlv": "01/02",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_list[].pump_side",
+          "tlv": "01/02/03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_list[].mode_id",
+          "tlv": "01/02/04",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_list[].mode_name",
+          "tlv": "01/02/05",
+          "wireType": "utf8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_list[].mode_unit_ref_list",
+          "tlv": "01/02/06",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_list[].mode_unit_ref_list[]",
+          "tlv": "01/02/06/07",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_list[].mode_unit_ref_list[].mode_unit_seq",
+          "tlv": "01/02/06/07/08",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_list[].mode_unit_ref_list[].mode_unit_id",
+          "tlv": "01/02/06/07/09",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "mode_list[].mode_unit_ref_list[].mode_unit_count",
+          "tlv": "01/02/06/07/0A",
+          "wireType": "u16",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        }
+      ]
+    },
+    {
+      "id": "set_rhythm_parameters",
+      "target": {
+        "kind": "service",
+        "identifier": "set_rhythm_parameters"
+      },
+      "sid": "10",
+      "cid": "11",
+      "interaction": "request_response",
+      "receiveVariants": [
+        "result"
+      ],
+      "correlation": "unmarked",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "active",
+      "request": [
+        {
+          "field": "rhythm_list",
+          "tlv": "01",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_list[]",
+          "tlv": "01/02",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_list[].pump_side",
+          "tlv": "01/02/03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_list[].rhythm_id",
+          "tlv": "01/02/04",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_list[].rhythm_name",
+          "tlv": "01/02/05",
+          "wireType": "utf8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_list[].mode_ref_list",
+          "tlv": "01/02/06",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_list[].mode_ref_list[]",
+          "tlv": "01/02/06/07",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_list[].mode_ref_list[].mode_seq",
+          "tlv": "01/02/06/07/08",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_list[].mode_ref_list[].mode_id",
+          "tlv": "01/02/06/07/09",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_list[].mode_ref_list[].mode_time",
+          "tlv": "01/02/06/07/0A",
+          "wireType": "u16",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        }
+      ]
+    },
+    {
+      "id": "get_rhythm_parameters",
+      "target": {
+        "kind": "service",
+        "identifier": "get_rhythm_parameters"
+      },
+      "sid": "10",
+      "cid": "12",
+      "interaction": "request_response",
+      "receiveVariants": [
+        "incoming",
+        "result"
+      ],
+      "correlation": "unmarked",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "active",
+      "request": [
+        {
+          "field": "pump_side",
+          "tlv": "03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_id",
+          "tlv": "04",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        }
+      ],
+      "incoming": [
+        {
+          "field": "rhythm_list",
+          "tlv": "01",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_list[]",
+          "tlv": "01/02",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_list[].pump_side",
+          "tlv": "01/02/03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_list[].rhythm_id",
+          "tlv": "01/02/04",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_list[].rhythm_name",
+          "tlv": "01/02/05",
+          "wireType": "utf8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_list[].mode_ref_list",
+          "tlv": "01/02/06",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_list[].mode_ref_list[]",
+          "tlv": "01/02/06/07",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_list[].mode_ref_list[].mode_seq",
+          "tlv": "01/02/06/07/08",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_list[].mode_ref_list[].mode_id",
+          "tlv": "01/02/06/07/09",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_list[].mode_ref_list[].mode_time",
+          "tlv": "01/02/06/07/0A",
+          "wireType": "u16",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        }
+      ]
+    },
+    {
+      "id": "get_rhythm_status",
+      "target": {
+        "kind": "service",
+        "identifier": "get_rhythm_status"
+      },
+      "sid": "10",
+      "cid": "13",
+      "interaction": "query_and_report",
+      "receiveVariants": [
+        "incoming",
+        "result"
+      ],
+      "correlation": "unmarked",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "active",
+      "request": [
+        {
+          "field": "pump_side",
+          "tlv": "03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_id",
+          "tlv": "05",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        }
+      ],
+      "incoming": [
+        {
+          "field": "rhythm_status_list",
+          "tlv": "01",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_status_list[]",
+          "tlv": "01/02",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_status_list[].pump_side",
+          "tlv": "01/02/03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_status_list[].rhythm_status",
+          "tlv": "01/02/04",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_status_list[].rhythm_id",
+          "tlv": "01/02/05",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_status_list[].mode_seq",
+          "tlv": "01/02/06",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "rhythm_status_list[].rhythm_time_left",
+          "tlv": "01/02/07",
+          "wireType": "u16",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        }
+      ]
+    },
+    {
+      "id": "report_raw_algorithm_data",
+      "target": {
+        "kind": "service",
+        "identifier": "report_raw_algorithm_data"
+      },
+      "sid": "10",
+      "cid": "14",
+      "interaction": "receive_only",
+      "receiveVariants": [
+        "incoming"
+      ],
+      "correlation": "none",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "active",
+      "incoming": [
+        {
+          "field": "raw_data_list",
+          "tlv": "01",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "raw_data_list[]",
+          "tlv": "01/02",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "raw_data_list[].pump_side",
+          "tlv": "01/02/03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "raw_data_list[].raw_algo_data",
+          "tlv": "01/02/04",
+          "wireType": "bytes",
+          "required": true,
+          "scale": "1",
+          "offset": "0",
+          "maxBytes": "63"
+        }
+      ]
+    },
+    {
+      "id": "set_raw_algorithm_report",
+      "target": {
+        "kind": "service",
+        "identifier": "set_raw_algorithm_report"
+      },
+      "sid": "10",
+      "cid": "15",
+      "interaction": "request_response",
+      "receiveVariants": [
+        "result"
+      ],
+      "correlation": "unmarked",
+      "source": "Pump revision107 + confirmed-decisions.md; no device claim",
+      "availability": "active",
+      "request": [
+        {
+          "field": "raw_algo_switch_list",
+          "tlv": "01",
+          "wireType": "array",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "raw_algo_switch_list[]",
+          "tlv": "01/02",
+          "wireType": "object",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "raw_algo_switch_list[].pump_side",
+          "tlv": "01/02/03",
+          "wireType": "u8",
+          "required": false,
+          "scale": "1",
+          "offset": "0"
+        },
+        {
+          "field": "raw_algo_switch_list[].raw_algo_report_enable",
+          "tlv": "01/02/04",
+          "wireType": "u8",
+          "required": true,
+          "scale": "1",
+          "offset": "0"
+        }
+      ]
+    }
+  ]
+}

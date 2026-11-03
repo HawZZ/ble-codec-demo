@@ -1,0 +1,14 @@
+{
+  "properties": {
+    "temperature": {
+      "title": "温度",
+      "access": "rw",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "multipleOf": 1
+    }
+  },
+  "services": {},
+  "events": {}
+}

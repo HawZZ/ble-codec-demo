@@ -1,0 +1,72 @@
+{
+  "format": "ble-thing-mapping/1",
+  "commands": [
+    {
+      "id": "write_temperature",
+      "target": {
+        "kind": "property",
+        "identifier": "temperature",
+        "behavior": "write"
+      },
+      "sid": "10",
+      "cid": "01",
+      "interaction": "one_way",
+      "receiveVariants": [],
+      "request": [
+        {
+          "field": "temperature",
+          "tlv": "01",
+          "wireType": "u8",
+          "length": 1
+        }
+      ],
+      "source": "合成教学示例；不是吸奶器真实CID定义；此示例明确不定义应用回包"
+    },
+    {
+      "id": "read_temperature",
+      "target": {
+        "kind": "property",
+        "identifier": "temperature",
+        "behavior": "read"
+      },
+      "sid": "10",
+      "cid": "02",
+      "interaction": "request_response",
+      "receiveVariants": [
+        "incoming"
+      ],
+      "incoming": [
+        {
+          "field": "temperature",
+          "tlv": "01",
+          "wireType": "u8",
+          "length": 1
+        }
+      ],
+      "source": "合成教学示例；不是吸奶器真实CID定义"
+    },
+    {
+      "id": "report_temperature",
+      "target": {
+        "kind": "property",
+        "identifier": "temperature",
+        "behavior": "report"
+      },
+      "sid": "10",
+      "cid": "03",
+      "interaction": "receive_only",
+      "receiveVariants": [
+        "incoming"
+      ],
+      "incoming": [
+        {
+          "field": "temperature",
+          "tlv": "01",
+          "wireType": "u8",
+          "length": 1
+        }
+      ],
+      "source": "合成教学示例；不是吸奶器真实CID定义"
+    }
+  ]
+}

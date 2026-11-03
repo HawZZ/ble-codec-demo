@@ -2,6 +2,8 @@
 
 独立 Demo：https://hawzz.github.io/ble-codec-demo/
 
+日常只需物模型JSON（properties / services / events）和BLE映射JSON（ble-thing-mapping/1）；点击“导出模型与映射”得到两个文件。属性直接绑定，无需额外建立服务。旧workspace、0.1／0.2机器字典和三张CSV仍可在兼容入口导入，不是必需交付。
+
 上传或逐行维护指令字典、配置物模型，选择上行／下行，完成 HEX 与物模型 JSON 的双向转换。支持嵌套对象、对象数组、倍率、约束及 1～2B TLV Length。
 
 所有编译和转换都在浏览器的 Web Worker 中执行，复用项目原 Python 引擎。上传内容不发往后端；草稿仅在点击保存后保存在当前浏览器。首次访问需要下载引擎及依赖，页面会显示下载进度；支持流解压的浏览器使用预压缩WASM资源。没有蓝牙发送、设备执行或云端平台能力。
@@ -13,3 +15,5 @@
 第三方运行时：Pyodide（见 `PYODIDE-LICENSE`）与 CPython（见 `PYTHON-LICENSE`）；Python 依赖及版本见 `build-manifest.json`，原许可证保留在各 wheel 的 dist-info 中。
 
 这是协议映射实验工具，独立于历史平台原型和聚合原型仓库。
+
+完整吸奶器示例覆盖21条定义，05/06按来源停用，0C/14仅上行；支持重复对象。温度示例为合成教学地址，不代表吸奶器实际CID。

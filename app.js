@@ -11,7 +11,7 @@
   const WORKSPACE_FORMAT = 'ble-codec-workspace/1';
   const DRAFT_KEY = 'ble-codec-demo:draft:v1';
   const FALLBACK_COLUMNS = {
-    commands: ['operation', 'method', 'sid', 'cid', 'interaction', 'receive_variants', 'correlation', 'timeout_ms', 'source'],
+    commands: ['operation', 'method', 'sid', 'cid', 'interaction', 'receive_variants', 'correlation', 'timeout_ms', 'source', 'availability'],
     bindings: ['operation', 'role', 'tlv_path', 'model_path', 'wire_type', 'required', 'scale', 'offset', 'max_bytes'],
     groups: ['operation', 'role', 'container_path', 'rule', 'fields']
   };
@@ -19,7 +19,7 @@
 
   const COLUMN_META = {
     operation: ['操作 ID', 132],
-    method: ['物模型方法', 142],
+    method: ['功能引用', 230],
     sid: ['SID', 68],
     cid: ['CID', 68],
     interaction: ['交互语义', 144],
@@ -27,6 +27,7 @@
     correlation: ['关联方式', 106],
     timeout_ms: ['超时 ms', 86],
     source: ['来源说明', 250],
+    availability: ['可用状态', 96],
     role: ['方向角色', 90],
     tlv_path: ['TLV 路径', 150],
     model_path: ['模型路径', 210],
@@ -43,13 +44,13 @@
   const TABLE_META = {
     commands: {
       title: '指令表',
-      description: '定义操作 ID、物模型方法、SID/CID 与交互语义。',
-      hint: '表头固定为 operation, method, sid, cid, interaction, receive_variants, correlation, timeout_ms, source。修改后会自动重新编译。'
+      description: '定义功能引用、SID/CID与交互。属性可直接绑定，无需新增服务。',
+      hint: '功能引用可填 property:temperature:write（或read/report）、service:服务名、event:事件名；旧服务名仍兼容。availability填写active或suspended。'
     },
     bindings: {
       title: '字段绑定表',
-      description: '把 TLV 路径映射到所选方法的 input / output 相对模型路径。',
-      hint: 'model_path 是相对方法输入或输出的路径；改名或移动模型节点后必须同步调整。role 使用 request / incoming。'
+      description: '把 TLV 路径映射到所选服务的 input / output 相对模型路径。',
+      hint: 'model_path 是相对服务输入或输出的路径；改名或移动模型节点后必须同步调整。role 使用 request / incoming。'
     },
     groups: {
       title: '约束组表',
@@ -300,7 +301,7 @@
       const rows = Array.isArray(source[table]) ? source[table] : [];
       source[table] = rows.filter(isObject).map((row) => {
         const next = {};
-        for (const column of columns) next[column] = row[column] == null ? '' : String(row[column]);
+        for (const column of columns) next[column] = row[column] == null ? (column === 'availability' ? 'active' : '') : String(row[column]);
         return next;
       });
     }
@@ -368,10 +369,10 @@
     } else {
       const methodCount = Object.keys(state.workspace.model.methods).length;
       $('workspaceTitle').textContent = `${commandCount} 条指令的离线字典`;
-      $('workspaceSubtitle').textContent = `${methodCount} 个物模型方法 · ${state.workspace.bindings.length} 条字段绑定 · 不连接蓝牙设备`;
+      $('workspaceSubtitle').textContent = `${methodCount} 个物模型服务 · ${state.workspace.bindings.length} 条字段绑定 · 不连接蓝牙设备`;
     }
     $('onboardingPanel').hidden = commandCount > 0;
-    $('modelSummary').textContent = `${Object.keys(state.workspace.model.methods).length} 个方法 · ${Object.keys(state.workspace.model.properties).length} 个属性 · ${Object.keys(state.workspace.model.events).length} 个事件`;
+    $('modelSummary').textContent = `${Object.keys(state.workspace.model.methods).length} 个服务 · ${Object.keys(state.workspace.model.properties).length} 个属性 · ${Object.keys(state.workspace.model.events).length} 个事件`;
   }
 
   function renderCompileStatus() {
@@ -397,6 +398,7 @@
     button.disabled = state.compile.status === 'compiling';
     button.textContent = state.compile.status === 'compiling' ? '编译中…' : '重新编译';
     $('exportDictionaryBtn').disabled = !hasCompiledDictionary();
+    $('exportPairBtn').disabled = !hasCompiledDictionary();
   }
 
   function renderIdentity() {
@@ -570,6 +572,7 @@
       state.compile.status = 'ready';
       state.compile.operations = Array.isArray(data.operations) ? data.operations : [];
       state.compile.dictionary = data.dictionary || null;
+      state.compile.files = data.files || null;
       state.compile.identity = data.identity || data.dictionary?.identity || null;
       state.compile.compiledAt = new Date();
       setServerState('online');
@@ -610,6 +613,35 @@
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
+  function exportPair() {
+    if (!hasCompiledDictionary() || !state.compile.files) return;
+    downloadJson('thing-model', state.compile.files.model);
+    downloadJson('ble-mapping', state.compile.files.mapping);
+    showToast('已导出物模型和BLE映射两个JSON；浏览器如提示，请允许下载多个文件。');
+  }
+
+  async function importPair() {
+    if (state.importBusy) return;
+    const model = $('pairModel').files?.[0], mapping = $('pairMapping').files?.[0];
+    const errorBox = $('importError');
+    if (!model || !mapping) { errorBox.textContent = '请选择物模型和BLE映射两个JSON文件。'; errorBox.hidden = false; return; }
+    state.importBusy = true;
+    $('importPairBtn').disabled = true;
+    $('importBusy').hidden = false;
+    errorBox.hidden = true;
+    try {
+      if (model.size + mapping.size > 2 * 1024 * 1024) throw new ApiError('BODY_LENGTH', '两个文件合计须在2MiB以内', 400);
+      const result = await postJson(API.import, {kind: 'pair', modelText: await model.text(), text: await mapping.text()});
+      applyWorkspace(result.workspace, '导入 · 物模型与BLE映射');
+      closeImportDialog(); activateTab('config'); showToast('物模型与映射导入成功。');
+    } catch (error) {
+      errorBox.textContent = `${error.code || 'IMPORT_FAILED'} · ${error.message}；当前工作区未改变。`;
+      errorBox.hidden = false;
+    } finally {
+      state.importBusy = false; $('importPairBtn').disabled = false; $('importBusy').hidden = true;
+    }
+  }
+
   function exportWorkspace() {
     const product = state.compile.identity?.product_id || 'ble-codec-workspace';
     downloadJson(`${product}-workspace`, state.workspace);
@@ -639,7 +671,7 @@
   }
 
   function modelCategoryLabel(category) {
-    return category === 'properties' ? '属性 PROPERTIES' : category === 'methods' ? '方法 METHODS' : '事件 EVENTS';
+    return category === 'properties' ? '属性 PROPERTIES' : category === 'methods' ? '服务 SERVICES' : '事件 EVENTS';
   }
 
   function typeLabel(schema) {
@@ -796,7 +828,7 @@
           kind: 'virtual-schema',
           category: 'methods',
           name: role,
-          displayName: role === 'input' ? '方法输入 input' : '方法输出 output',
+          displayName: role === 'input' ? '服务输入 input' : '方法输出 output',
           pathLabel: `methods.${name}.${role}`,
           schema,
           depth: 1,
@@ -911,7 +943,7 @@
       const head = `<div class="tree-category-head"><span>${modelCategoryLabel(category)}</span><span>${rows.length}</span></div>`;
       const body = rows.length
         ? rows.map((node) => treeRowHtml(node)).join('')
-        : `<div class="tree-category-empty">${category === 'methods' ? '还没有方法；添加后配置 input / output。' : category === 'properties' ? '没有属性节点。属性需经实际指令映射才参与转换。' : '没有事件节点。事件需经实际指令映射才参与转换。'}</div>`;
+        : `<div class="tree-category-empty">${category === 'methods' ? '还没有服务；添加后配置 input / output。' : category === 'properties' ? '没有属性节点。属性需经实际指令映射才参与转换。' : '没有事件节点。事件需经实际指令映射才参与转换。'}</div>`;
       return `<section class="tree-category">${head}${body}</section>`;
     }).join('');
   }
@@ -919,7 +951,10 @@
   function syncModelJsonText() {
     const editor = $('modelJson');
     if (!editor) return;
-    editor.value = pretty(state.workspace.model);
+    const model = clone(state.workspace.model);
+    model.services = model.methods;
+    delete model.methods;
+    editor.value = pretty(model);
     state.modelJsonDirty = false;
     setModelJsonMessage('');
   }
@@ -944,8 +979,10 @@
   function applyModelJson() {
     try {
       const parsed = JSON.parse($('modelJson').value);
+      if (Object.hasOwn(parsed, 'services') && Object.hasOwn(parsed, 'methods')) throw new Error('services与旧methods不能同时声明');
+      if (Object.hasOwn(parsed, 'services')) { parsed.methods = parsed.services; delete parsed.services; }
       if (!isObject(parsed) || !isObject(parsed.properties) || !isObject(parsed.methods) || !isObject(parsed.events)) {
-        throw new Error('模型必须包含 properties、methods、events 三个对象');
+        throw new Error('模型必须包含 properties、services、events 三个对象');
       }
       state.workspace.model = parsed;
       state.modelJsonDirty = false;
@@ -978,20 +1015,22 @@
     const dialog = $('nodeDialog');
     const schemaMode = editor.mode !== 'method';
     $('nodeDialogEyebrow').textContent = schemaMode ? 'MODEL NODE' : 'METHOD';
-    $('nodeDialogTitle').textContent = schemaMode ? (editor.intent === 'create' ? '添加模型节点' : '配置模型节点') : (editor.intent === 'create' ? '添加物模型方法' : '编辑物模型方法');
+    $('nodeDialogTitle').textContent = schemaMode ? (editor.intent === 'create' ? '添加模型节点' : '配置模型节点') : (editor.intent === 'create' ? '添加物模型服务' : '编辑物模型服务');
     $('nodeDialogSubtitle').textContent = schemaMode
       ? '只修改物模型 schema；已存在的字段映射路径不会被自动改写。'
       : '方法改名不会自动改写 commands.method，请同步检查指令表。';
     $('nodeMode').value = editor.mode;
     $('nodeNameLabel').textContent = schemaMode ? '字段键名' : '方法键名';
-    $('nodeName').value = editor.intent === 'create' ? '' : editor.oldKey || '';
+    $('nodeKey').value = editor.intent === 'create' ? '' : editor.oldKey || '';
     $('nodeTitle').value = schemaMode ? (editor.schema?.title || '') : (editor.method?.name || '');
     $('nodeDescription').value = schemaMode ? (editor.schema?.description || '') : (editor.method?.description || '');
-    $('nodeName').disabled = !editor.nameEditable;
+    $('nodeKey').disabled = !editor.nameEditable;
     $('nodeSchemaFields').hidden = !schemaMode;
     $('nodeWarning').hidden = false;
     $('nodeFormError').hidden = true;
     $('nodeFormError').textContent = '';
+    $('propertyAccessWrap').hidden = !(schemaMode && editor.bucket === 'properties');
+    $('propertyAccess').value = editor.schema?.access || 'rw';
 
     if (schemaMode) {
       const schema = editor.schema || defaultSchemaForType('string');
@@ -1013,7 +1052,7 @@
     if (dialog.open) dialog.close();
     dialog.showModal();
     window.setTimeout(() => {
-      if (!$('nodeName').disabled) $('nodeName').focus();
+      if (!$('nodeKey').disabled) $('nodeKey').focus();
       else $('nodeType').focus();
     }, 0);
   }
@@ -1154,6 +1193,7 @@
   function saveSchemaNode(editor, name) {
     const type = editor.fixedObject ? 'object' : $('nodeType').value;
     const next = clone(isObject(editor.schema) ? editor.schema : {});
+    if (editor.bucket === 'properties') next.access = $('propertyAccess').value;
     next.type = type;
     const title = $('nodeTitle').value.trim();
     const description = $('nodeDescription').value.trim();
@@ -1265,7 +1305,7 @@
     const errorBox = $('nodeFormError');
     errorBox.hidden = true;
     try {
-      let name = $('nodeName').value.trim();
+      let name = $('nodeKey').value.trim();
       if (editor.arrayItemRoot) name = '[]';
       else if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
         throw new Error('键名必须以字母或下划线开头，只能包含字母、数字和下划线');
@@ -1344,6 +1384,7 @@
   function newRowForTable(tableName) {
     const row = {};
     for (const column of state.columns[tableName]) row[column] = '';
+    if (tableName === 'commands') row.availability = 'active';
     const firstOperation = state.workspace.commands[0]?.operation || '';
     if ((tableName === 'bindings' || tableName === 'groups') && firstOperation) {
       row.operation = firstOperation;
@@ -1473,7 +1514,7 @@
       `<span>SID ${escapeHtml(hexByte(operation.sid))}</span>`,
       `<span>CID ${escapeHtml(hexByte(operation.cid))}</span>`,
       `<span>${escapeHtml(operation.method)}</span>`,
-      `<span>${operation.can_encode_up ? '上下行布局' : '无上行编码布局'}</span>`
+      `<span>${operation.availability === 'suspended' ? '规范挂起' : !operation.can_encode_down ? '仅上行' : operation.can_encode_up ? '上下行布局' : operation.interaction === 'one_way' ? '仅下行，无应用回包' : '下行及响应'}</span>`
     ].join('');
   }
 
@@ -1485,7 +1526,7 @@
     for (const operation of state.compile.operations) {
       options.push({
         value: operation.operation,
-        label: `${operation.operation}  ·  ${hexByte(operation.sid)}/${hexByte(operation.cid)}`
+        label: `${operation.availability === 'suspended' ? '[挂起] ' : !operation.can_encode_down ? '[仅上行] ' : ''}${operation.operation}  ·  ${hexByte(operation.sid)}/${hexByte(operation.cid)}`
       });
     }
     if (!options.length) {
@@ -1521,7 +1562,7 @@
 
     const schema = activeSchema();
     const isAuto = state.lab.mode === 'decode' && state.lab.operation === 'auto';
-    const scopeLabel = isAuto ? '自动识别' : state.lab.direction === 'down' ? '方法输入 request' : '方法输出 incoming';
+    const scopeLabel = isAuto ? '自动识别' : state.lab.direction === 'down' ? '业务输入 request' : '方法输出 incoming';
     $('labScopeBadge').textContent = scopeLabel;
     $('labScopeDescription').textContent = isAuto
       ? '按 PDU 的 SID/CID 在当前字典中查找唯一指令。'
@@ -1544,11 +1585,11 @@
     $('formScopeText').textContent = schema
       ? `${state.lab.direction === 'down' ? 'request' : 'incoming'} schema · 表单由当前模型生成`
       : isAuto ? '自动识别模式不使用表单' : '等待有效指令与 schema';
-    $('encodeActionNote').textContent = operation && state.lab.direction === 'up' && !operation.can_encode_up
+    $('encodeActionNote').textContent = operation?.availability === 'suspended' ? '规范挂起：保留定义，不执行编解码。' : operation && state.lab.direction === 'down' && !operation.can_encode_down ? '此指令只定义上行数据，请切换为上行。' : operation && state.lab.direction === 'up' && !operation.can_encode_up
       ? '当前指令未声明可编码的上行数据布局。'
       : '编码请求会携带当前全部编辑，由浏览器引擎重新编译。';
-    $('encodeBtn').disabled = state.compile.status !== 'ready' || !operation || isAuto || (state.lab.direction === 'up' && !operation.can_encode_up);
-    $('decodeBtn').disabled = state.compile.status !== 'ready' || !state.lab.operation;
+    $('encodeBtn').disabled = state.compile.status !== 'ready' || !operation || isAuto || operation.availability === 'suspended' || (state.lab.direction === 'up' ? !operation.can_encode_up : !operation.can_encode_down);
+    $('decodeBtn').disabled = state.compile.status !== 'ready' || !state.lab.operation || operation?.availability === 'suspended' || (operation && state.lab.direction === 'down' && !operation.can_encode_down);
 
     renderFormArea();
     renderResult();
@@ -1575,7 +1616,7 @@
         ? '自动识别只用于解码；切换到编码或明确选择指令后生成表单。'
         : state.compile.status === 'ready'
           ? '当前指令和方向没有可用的模型 schema。'
-          : '编译成功后根据所选方法生成表单。';
+          : '编译成功后根据所选服务生成表单。';
       return;
     }
     empty.hidden = true;
@@ -1598,7 +1639,7 @@
   function renderGeneratedForm(root, schema, data) {
     root.replaceChildren();
     if (schema.type !== 'object') {
-      const note = createTextElement('div', 'form-no-schema', '方法输入／输出当前不是对象，无法生成字段表单。可使用 JSON 编辑并检查模型。');
+      const note = createTextElement('div', 'form-no-schema', '服务输入／输出当前不是对象，无法生成字段表单。可使用 JSON 编辑并检查模型。');
       root.append(note);
       return;
     }
@@ -2305,6 +2346,9 @@
     $('labTabBtn').addEventListener('click', () => activateTab('lab'));
     $('compileBtn').addEventListener('click', () => compileWorkspace(true));
     $('exportWorkspaceBtn').addEventListener('click', exportWorkspace);
+    $('exportPairBtn').addEventListener('click', exportPair);
+    $('importPairBtn').addEventListener('click', importPair);
+    for (const id of ['pairModel', 'pairMapping']) $(id).addEventListener('change', () => { $(id + 'Name').textContent = $(id).files?.[0]?.name || '请选择JSON文件'; });
     $('exportDictionaryBtn').addEventListener('click', exportDictionary);
     $('saveDraftBtn').addEventListener('click', saveDraft);
     $('openImportBtn').addEventListener('click', openImportDialog);

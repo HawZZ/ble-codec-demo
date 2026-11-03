@@ -1,0 +1,2880 @@
+{
+  "properties": {
+    "common_status_list": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "pump_side": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "multipleOf": 1
+          },
+          "connection_status": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "0x00=single，0x01=peers，0x02=multi",
+            "enum": [
+              0,
+              1,
+              2
+            ],
+            "multipleOf": 1
+          },
+          "travel_lock_status": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "旅行锁使能状态0x00: disable0x01: enable",
+            "enum": [
+              0,
+              1
+            ],
+            "multipleOf": 1
+          },
+          "flange_type": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "法兰类型（未定义）",
+            "multipleOf": 1
+          }
+        },
+        "required": [
+          "connection_status"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "pump_status_list": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "pump_side": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "multipleOf": 1
+          },
+          "pump_status": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "0x0=idle 0x01=pumping，0x02=paused，0x03=ended",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "multipleOf": 1
+          },
+          "pump_mode": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7,
+            "description": "0x01~0x070x01 按摩/刺激 0x02 吸乳 0x03 混合 0x04 自定义0x05 PP追奶 0x06 2+8奶量提升 0x07 开奶",
+            "multipleOf": 1
+          },
+          "pump_level": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 15,
+            "description": "0x01~0x0F（1档~15档）",
+            "multipleOf": 1
+          },
+          "pump_freq": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "当前速度 0 （0：slow 1：mid 2：high）",
+            "enum": [
+              0,
+              1,
+              2
+            ],
+            "multipleOf": 1
+          },
+          "pump_duration_time": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535,
+            "description": "对应模式下需要的工作时长（秒）",
+            "multipleOf": 1
+          },
+          "pump_type": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "0x00：模式0x01：韵律",
+            "enum": [
+              0,
+              1
+            ],
+            "multipleOf": 1
+          },
+          "pump_elapsed_time": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535,
+            "description": "已运行时长",
+            "multipleOf": 1
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    "vibration_status_list": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "pump_side": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "multipleOf": 1
+          },
+          "vibration_status": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "0x00=vibrating，0x01=paused",
+            "enum": [
+              0,
+              1
+            ],
+            "multipleOf": 1
+          },
+          "vibration_mode": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "振动工作模式",
+            "multipleOf": 1
+          },
+          "vibration_freq": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535,
+            "description": "振动工作频率",
+            "multipleOf": 1
+          },
+          "vibration_duration_time": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535,
+            "description": "振动工作持续时间",
+            "multipleOf": 1
+          }
+        },
+        "required": [
+          "vibration_status",
+          "vibration_mode",
+          "vibration_freq",
+          "vibration_duration_time"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "light_status_list": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "pump_side": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "multipleOf": 1
+          },
+          "light_type": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "0x00=照明灯",
+            "enum": [
+              0,
+              1
+            ],
+            "multipleOf": 1
+          },
+          "light_status": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "0x00=on，0x01=off",
+            "enum": [
+              0,
+              1
+            ],
+            "multipleOf": 1
+          },
+          "light_adapt_status": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "灯自适应使能状态0x00: disable0x01: enable",
+            "enum": [
+              0,
+              1
+            ],
+            "multipleOf": 1
+          },
+          "light_brightness_level": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "灯亮度等级0-100",
+            "multipleOf": 1
+          },
+          "light_duration_time": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535,
+            "description": "灯工作持续时间>0s",
+            "multipleOf": 1
+          }
+        },
+        "required": [
+          "light_type"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "heat_status_list": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "pump_side": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "multipleOf": 1
+          },
+          "heat_status": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "0x00=on，0x01=off",
+            "enum": [
+              0,
+              1
+            ],
+            "multipleOf": 1
+          },
+          "heat_level": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "加热挡位(未定义)",
+            "multipleOf": 1
+          },
+          "heat_duration_time": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535,
+            "description": "加热工作持续时间>0s",
+            "multipleOf": 1
+          }
+        },
+        "required": [
+          "heat_status",
+          "heat_level",
+          "heat_duration_time"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "perception_list": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "pump_side": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "multipleOf": 1
+          },
+          "milk_volume_notify_enable": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "使能和关闭奶量通知0x00: disable0x01: enable",
+            "enum": [
+              0,
+              1
+            ],
+            "multipleOf": 1
+          },
+          "let_down_notify_enable": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "使能和关闭奶阵通知0x00: disable0x01: enable",
+            "enum": [
+              0,
+              1
+            ],
+            "multipleOf": 1
+          },
+          "milk_volume": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "当前奶量（ml）",
+            "multipleOf": 1
+          },
+          "let_down": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "奶阵 0x00=idle，0x01=start，0x02=active，0x03=end",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "multipleOf": 1
+          },
+          "full_milk_notify_enable": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "使能和关闭满奶通知0x00: disable0x01: enable",
+            "enum": [
+              0,
+              1
+            ],
+            "multipleOf": 1
+          },
+          "full_milk": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "满奶通知 0x01=is_full",
+            "enum": [
+              1
+            ],
+            "multipleOf": 1
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    "mode_unit_list": {
+      "type": "object",
+      "properties": {
+        "pump_side": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255,
+          "multipleOf": 1,
+          "enum": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        "mode_units": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "mode_unit_id": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255,
+                "multipleOf": 1,
+                "enum": [
+                  0,
+                  1,
+                  2
+                ]
+              },
+              "driver_type": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255,
+                "multipleOf": 1,
+                "enum": [
+                  0
+                ]
+              },
+              "mode_unit_data_list": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "pump_level": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 255,
+                      "multipleOf": 1
+                    },
+                    "pump_duration_time": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 65535,
+                      "multipleOf": 1
+                    },
+                    "pump_delay_time": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 65535,
+                      "multipleOf": 1
+                    },
+                    "pump_pwm": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 255,
+                      "multipleOf": 1
+                    },
+                    "value_duration_time": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 65535,
+                      "multipleOf": 1
+                    },
+                    "value_delay_time": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 65535,
+                      "multipleOf": 1
+                    }
+                  },
+                  "required": [
+                    "pump_level",
+                    "pump_duration_time",
+                    "pump_delay_time",
+                    "pump_pwm",
+                    "value_duration_time",
+                    "value_delay_time"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "mode_unit_id",
+              "driver_type",
+              "mode_unit_data_list"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "mode_units"
+      ],
+      "additionalProperties": false
+    },
+    "mode_list": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "pump_side": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "multipleOf": 1
+          },
+          "mode_id": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "模式编号",
+            "multipleOf": 1
+          },
+          "mode_name": {
+            "type": "string",
+            "description": "模式名称，UTF-8 编码"
+          },
+          "mode_unit_ref_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "mode_unit_seq": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 255,
+                  "description": "模式单元序号（1 开始递增）",
+                  "multipleOf": 1
+                },
+                "mode_unit_id": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "引用的模式单元 ID",
+                  "multipleOf": 1
+                },
+                "mode_unit_count": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535,
+                  "description": "模式单元执行次数",
+                  "multipleOf": 1
+                }
+              },
+              "required": [
+                "mode_unit_seq",
+                "mode_unit_id",
+                "mode_unit_count"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "mode_id",
+          "mode_unit_ref_list"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "rhythm_list": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "pump_side": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "multipleOf": 1
+          },
+          "rhythm_id": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "韵律编号",
+            "multipleOf": 1
+          },
+          "rhythm_name": {
+            "type": "string",
+            "description": "韵律名称，UTF-8 编码"
+          },
+          "mode_ref_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "mode_seq": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 255,
+                  "description": "模式序号（1 开始递增）",
+                  "multipleOf": 1
+                },
+                "mode_id": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "引用的模式 ID",
+                  "multipleOf": 1
+                },
+                "mode_time": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535,
+                  "description": "模式执行时长（秒）",
+                  "multipleOf": 1
+                }
+              },
+              "required": [
+                "mode_seq",
+                "mode_id",
+                "mode_time"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "rhythm_id",
+          "mode_ref_list"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "rhythm_status_list": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "pump_side": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "multipleOf": 1
+          },
+          "rhythm_status": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "0x00=running，0x01=paused",
+            "enum": [
+              0,
+              1
+            ],
+            "multipleOf": 1
+          },
+          "rhythm_id": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "当前工作韵律编号",
+            "multipleOf": 1
+          },
+          "mode_seq": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "当前运行的模式序号",
+            "multipleOf": 1
+          },
+          "rhythm_time_left": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535,
+            "description": "当前工作韵律剩余时长（秒）",
+            "multipleOf": 1
+          }
+        },
+        "required": [
+          "rhythm_status",
+          "rhythm_id",
+          "mode_seq",
+          "rhythm_time_left"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "raw_data_list": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "pump_side": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "作用对象标识符（不携带，则默认全部）0x00: Left0x01: Right0x03: independence",
+            "enum": [
+              0,
+              1,
+              3
+            ],
+            "multipleOf": 1
+          },
+          "raw_algo_data": {
+            "type": "string",
+            "description": "算法原始数据",
+            "minLength": 126,
+            "maxLength": 126
+          }
+        },
+        "required": [
+          "raw_algo_data"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "events": {
+    "perception_status_report": {
+      "type": "object",
+      "properties": {
+        "perception_list": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "pump_side": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255,
+                "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+                "enum": [
+                  0,
+                  1,
+                  2,
+                  3
+                ],
+                "multipleOf": 1
+              },
+              "milk_volume_notify_enable": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255,
+                "description": "使能和关闭奶量通知0x00: disable0x01: enable",
+                "enum": [
+                  0,
+                  1
+                ],
+                "multipleOf": 1
+              },
+              "let_down_notify_enable": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255,
+                "description": "使能和关闭奶阵通知0x00: disable0x01: enable",
+                "enum": [
+                  0,
+                  1
+                ],
+                "multipleOf": 1
+              },
+              "milk_volume": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255,
+                "description": "当前奶量（ml）",
+                "multipleOf": 1
+              },
+              "let_down": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255,
+                "description": "奶阵 0x00=idle，0x01=start，0x02=active，0x03=end",
+                "enum": [
+                  0,
+                  1,
+                  2,
+                  3
+                ],
+                "multipleOf": 1
+              },
+              "full_milk_notify_enable": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255,
+                "description": "使能和关闭满奶通知0x00: disable0x01: enable",
+                "enum": [
+                  0,
+                  1
+                ],
+                "multipleOf": 1
+              },
+              "full_milk": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255,
+                "description": "满奶通知 0x01=is_full",
+                "enum": [
+                  1
+                ],
+                "multipleOf": 1
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "raw_algorithm_data": {
+      "type": "object",
+      "properties": {
+        "raw_data_list": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "pump_side": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255,
+                "description": "作用对象标识符（不携带，则默认全部）0x00: Left0x01: Right0x03: independence",
+                "enum": [
+                  0,
+                  1,
+                  3
+                ],
+                "multipleOf": 1
+              },
+              "raw_algo_data": {
+                "type": "string",
+                "description": "算法原始数据",
+                "minLength": 126,
+                "maxLength": 126
+              }
+            },
+            "required": [
+              "raw_algo_data"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "raw_data_list"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "services": {
+    "set_common_parameters": {
+      "name": "设置设备通用功能 (CID=0x01)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "common_setting_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pump_side": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "travel_lock_enable": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "使能和关闭旅行锁0x00: disable0x01: enable",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                },
+                "wear_detect_enable": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "使能和关闭旅佩戴检测0x00: disable0x01: enable",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "common_setting_list"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    "get_common_status": {
+      "name": "获取设备通用状态 (CID=0x02)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "pump_side": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "作用对象标识符0x00：Left 0x01：Right0x02：Sync0x03：independence",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "multipleOf": 1
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "common_status_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pump_side": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "connection_status": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "0x00=single，0x01=peers，0x02=multi",
+                  "enum": [
+                    0,
+                    1,
+                    2
+                  ],
+                  "multipleOf": 1
+                },
+                "travel_lock_status": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "旅行锁使能状态0x00: disable0x01: enable",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                },
+                "flange_type": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "法兰类型（未定义）",
+                  "multipleOf": 1
+                }
+              },
+              "required": [
+                "connection_status"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "common_status_list"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "set_pump_parameters": {
+      "name": "设置设备吸乳工作参数 (CID=0x03)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "pump_setting_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pump_side": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "pump_enable": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "使能 暂停 关闭泵阀0x01: enable，0x02: pause，0x03：end",
+                  "enum": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "pump_mode": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 7,
+                  "description": "模式/韵律ID（0x01~0x07）模式：0x01 按摩/刺激 0x02 吸乳 0x03 混合 0x04 自定义 0x05 PP追奶 0x06 2+8奶量提升 0x07 开奶韵律：1 常规韵律/Cozy Flow · 2 2+8奶量提升 · 3 PP追奶 · 4 开奶 · 5 追加排空 · 6 放松 · 7 自定义",
+                  "multipleOf": 1
+                },
+                "pump_level": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 15,
+                  "description": "强度挡位（1档~15档）",
+                  "multipleOf": 1
+                },
+                "pump_freq": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "速度：（0：slow 1：mid 2：high）",
+                  "enum": [
+                    0,
+                    1,
+                    2
+                  ],
+                  "multipleOf": 1
+                },
+                "pump_type": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "0x00：模式0x01：韵律",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "pump_setting_list"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    "get_pump_status": {
+      "name": "获取设备吸乳工作状态 (CID=0x04)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "pump_side": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "multipleOf": 1
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "pump_status_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pump_side": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "pump_status": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "0x0=idle 0x01=pumping，0x02=paused，0x03=ended",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "pump_mode": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 7,
+                  "description": "0x01~0x070x01 按摩/刺激 0x02 吸乳 0x03 混合 0x04 自定义0x05 PP追奶 0x06 2+8奶量提升 0x07 开奶",
+                  "multipleOf": 1
+                },
+                "pump_level": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 15,
+                  "description": "0x01~0x0F（1档~15档）",
+                  "multipleOf": 1
+                },
+                "pump_freq": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "当前速度 0 （0：slow 1：mid 2：high）",
+                  "enum": [
+                    0,
+                    1,
+                    2
+                  ],
+                  "multipleOf": 1
+                },
+                "pump_duration_time": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535,
+                  "description": "对应模式下需要的工作时长（秒）",
+                  "multipleOf": 1
+                },
+                "pump_type": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "0x00：模式0x01：韵律",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                },
+                "pump_elapsed_time": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535,
+                  "description": "已运行时长",
+                  "multipleOf": 1
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "pump_status_list"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "set_vibration_parameters": {
+      "name": "设置设备振动参数 (CID=0x05，暂时挂起，当前不支持app设置震动参数)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "vibration_setting_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pump_side": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "vibration_enable": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "使能和关闭振动0x00: disable0x01: enable",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                },
+                "vibration_mode": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "振动模式",
+                  "multipleOf": 1
+                },
+                "vibration_freq": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535,
+                  "description": "振动频率 Hz",
+                  "multipleOf": 1
+                },
+                "vibration_duration_time": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 65535,
+                  "description": "振动持续时长>0 s",
+                  "multipleOf": 1
+                }
+              },
+              "required": [
+                "vibration_enable",
+                "vibration_mode",
+                "vibration_freq",
+                "vibration_duration_time"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "vibration_setting_list"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    "get_vibration_status": {
+      "name": "获取设备振动状态 (CID=0x06，同上)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "pump_side": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "multipleOf": 1
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "vibration_status_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pump_side": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "vibration_status": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "0x00=vibrating，0x01=paused",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                },
+                "vibration_mode": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "振动工作模式",
+                  "multipleOf": 1
+                },
+                "vibration_freq": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535,
+                  "description": "振动工作频率",
+                  "multipleOf": 1
+                },
+                "vibration_duration_time": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535,
+                  "description": "振动工作持续时间",
+                  "multipleOf": 1
+                }
+              },
+              "required": [
+                "vibration_status",
+                "vibration_mode",
+                "vibration_freq",
+                "vibration_duration_time"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "vibration_status_list"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "set_light_parameters": {
+      "name": "设置设备灯参数 (CID=0x07)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "light_setting_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pump_side": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "light_type": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "灯类型0x00：照明灯0x01：红光灯0x02：",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                },
+                "light_enable": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "使能和关闭灯0x00: disable0x01: enable",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                },
+                "light_adapt_enable": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "使能和关闭灯自适应0x00: disable0x01: enable",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                },
+                "light_brightness_level": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "description": "灯亮度挡位0～100",
+                  "multipleOf": 1
+                },
+                "light_duration_time": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 65535,
+                  "description": "灯工作持续时长>0s",
+                  "multipleOf": 1
+                }
+              },
+              "required": [
+                "light_type"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "light_setting_list"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    "get_light_status": {
+      "name": "获取设备灯状态 (CID=0x08)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "pump_side": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "multipleOf": 1
+          },
+          "light_type": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "过滤：0x00=照明灯。不携带则返回全部",
+            "enum": [
+              0,
+              1
+            ],
+            "multipleOf": 1
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "light_status_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pump_side": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "light_type": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "0x00=照明灯",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                },
+                "light_status": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "0x00=on，0x01=off",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                },
+                "light_adapt_status": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "灯自适应使能状态0x00: disable0x01: enable",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                },
+                "light_brightness_level": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "description": "灯亮度等级0-100",
+                  "multipleOf": 1
+                },
+                "light_duration_time": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 65535,
+                  "description": "灯工作持续时间>0s",
+                  "multipleOf": 1
+                }
+              },
+              "required": [
+                "light_type"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "light_status_list"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "set_heat_parameters": {
+      "name": "设置设备加热参数 (CID=0x09)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "heat_setting_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pump_side": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "heat_enable": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "使能和关闭加热0x00: disable0x01: enable",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                },
+                "heat_level": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "加热挡位(未定义)",
+                  "multipleOf": 1
+                },
+                "heat_duration_time": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 65535,
+                  "description": "加热工作持续时长>0s",
+                  "multipleOf": 1
+                }
+              },
+              "required": [
+                "heat_enable",
+                "heat_level",
+                "heat_duration_time"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "heat_setting_list"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    "get_heat_status": {
+      "name": "获取设备加热状态 (CID=0x0A)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "pump_side": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "multipleOf": 1
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "heat_status_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pump_side": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "heat_status": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "0x00=on，0x01=off",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                },
+                "heat_level": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "加热挡位(未定义)",
+                  "multipleOf": 1
+                },
+                "heat_duration_time": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 65535,
+                  "description": "加热工作持续时间>0s",
+                  "multipleOf": 1
+                }
+              },
+              "required": [
+                "heat_status",
+                "heat_level",
+                "heat_duration_time"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "heat_status_list"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "set_perception_parameters": {
+      "name": "设置设备状态感知数据 (CID=0x0B)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "perception_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pump_side": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "milk_volume_notify_enable": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "使能和关闭奶量通知0x00: disable0x01: enable",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                },
+                "let_down_notify_enable": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "使能和关闭奶阵通知0x00: disable0x01: enable",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                },
+                "full_milk_notify_enable": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "使能和关闭奶阵通知0x00: disable0x01: enable",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "perception_list"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    "get_perception_status": {
+      "name": "获取设备感知状态信息 (CID=0x0C)",
+      "input": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "perception_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pump_side": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "milk_volume_notify_enable": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "使能和关闭奶量通知0x00: disable0x01: enable",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                },
+                "let_down_notify_enable": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "使能和关闭奶阵通知0x00: disable0x01: enable",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                },
+                "milk_volume": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "当前奶量（ml）",
+                  "multipleOf": 1
+                },
+                "let_down": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "奶阵 0x00=idle，0x01=start，0x02=active，0x03=end",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "full_milk_notify_enable": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "使能和关闭满奶通知0x00: disable0x01: enable",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                },
+                "full_milk": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "满奶通知 0x01=is_full",
+                  "enum": [
+                    1
+                  ],
+                  "multipleOf": 1
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    "set_mode_unit_parameters": {
+      "name": "设置设备模式单元参数 (CID=0x0D)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "mode_unit_list": {
+            "type": "object",
+            "properties": {
+              "pump_side": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255,
+                "multipleOf": 1,
+                "enum": [
+                  0,
+                  1,
+                  2,
+                  3
+                ]
+              },
+              "mode_units": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "mode_unit_id": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 255,
+                      "multipleOf": 1,
+                      "enum": [
+                        0,
+                        1,
+                        2
+                      ]
+                    },
+                    "driver_type": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 255,
+                      "multipleOf": 1,
+                      "enum": [
+                        0
+                      ]
+                    },
+                    "mode_unit_data_list": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "pump_level": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 255,
+                            "multipleOf": 1
+                          },
+                          "pump_duration_time": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 65535,
+                            "multipleOf": 1
+                          },
+                          "pump_delay_time": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 65535,
+                            "multipleOf": 1
+                          },
+                          "pump_pwm": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 255,
+                            "multipleOf": 1
+                          },
+                          "value_duration_time": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 65535,
+                            "multipleOf": 1
+                          },
+                          "value_delay_time": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 65535,
+                            "multipleOf": 1
+                          }
+                        },
+                        "required": [
+                          "pump_level",
+                          "pump_duration_time",
+                          "pump_delay_time",
+                          "pump_pwm",
+                          "value_duration_time",
+                          "value_delay_time"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "mode_unit_id",
+                    "driver_type",
+                    "mode_unit_data_list"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "mode_units"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "mode_unit_list"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    "get_mode_unit_parameters": {
+      "name": "获取设备模式单元参数 (CID=0x0E)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "pump_side": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "multipleOf": 1,
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ]
+          },
+          "mode_unit_id": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "multipleOf": 1,
+            "enum": [
+              0,
+              1,
+              2
+            ]
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "mode_unit_list": {
+            "type": "object",
+            "properties": {
+              "pump_side": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255,
+                "multipleOf": 1,
+                "enum": [
+                  0,
+                  1,
+                  2,
+                  3
+                ]
+              },
+              "mode_units": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "mode_unit_id": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 255,
+                      "multipleOf": 1,
+                      "enum": [
+                        0,
+                        1,
+                        2
+                      ]
+                    },
+                    "driver_type": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 255,
+                      "multipleOf": 1,
+                      "enum": [
+                        0
+                      ]
+                    },
+                    "mode_unit_data_list": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "pump_level": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 255,
+                            "multipleOf": 1
+                          },
+                          "pump_duration_time": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 65535,
+                            "multipleOf": 1
+                          },
+                          "pump_delay_time": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 65535,
+                            "multipleOf": 1
+                          },
+                          "pump_pwm": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 255,
+                            "multipleOf": 1
+                          },
+                          "value_duration_time": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 65535,
+                            "multipleOf": 1
+                          },
+                          "value_delay_time": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 65535,
+                            "multipleOf": 1
+                          }
+                        },
+                        "required": [
+                          "pump_level",
+                          "pump_duration_time",
+                          "pump_delay_time",
+                          "pump_pwm",
+                          "value_duration_time",
+                          "value_delay_time"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "mode_unit_id",
+                    "driver_type",
+                    "mode_unit_data_list"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "mode_units"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "mode_unit_list"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "set_mode_parameters": {
+      "name": "设置设备模式参数 (CID=0x0F)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "mode_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pump_side": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "mode_id": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "模式编号",
+                  "multipleOf": 1
+                },
+                "mode_name": {
+                  "type": "string",
+                  "description": "模式名称，UTF-8 编码"
+                },
+                "mode_unit_ref_list": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "mode_unit_seq": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "模式单元序号（1 开始递增）",
+                        "multipleOf": 1
+                      },
+                      "mode_unit_id": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255,
+                        "description": "引用的模式单元 ID",
+                        "multipleOf": 1
+                      },
+                      "mode_unit_count": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 65535,
+                        "description": "模式单元执行次数",
+                        "multipleOf": 1
+                      }
+                    },
+                    "required": [
+                      "mode_unit_seq",
+                      "mode_unit_id",
+                      "mode_unit_count"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "mode_id",
+                "mode_unit_ref_list"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "mode_list"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    "get_mode_parameters": {
+      "name": "获取设备模式参数 (CID=0x10)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "pump_side": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "multipleOf": 1
+          },
+          "mode_id": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "过滤：模式编号。不携带则返回全部",
+            "multipleOf": 1
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "mode_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pump_side": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "mode_id": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "模式编号",
+                  "multipleOf": 1
+                },
+                "mode_name": {
+                  "type": "string",
+                  "description": "模式名称，UTF-8 编码"
+                },
+                "mode_unit_ref_list": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "mode_unit_seq": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "模式单元序号（1 开始递增）",
+                        "multipleOf": 1
+                      },
+                      "mode_unit_id": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255,
+                        "description": "引用的模式单元 ID",
+                        "multipleOf": 1
+                      },
+                      "mode_unit_count": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 65535,
+                        "description": "模式单元执行次数",
+                        "multipleOf": 1
+                      }
+                    },
+                    "required": [
+                      "mode_unit_seq",
+                      "mode_unit_id",
+                      "mode_unit_count"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "mode_id",
+                "mode_unit_ref_list"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "mode_list"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "set_rhythm_parameters": {
+      "name": "设置设备韵律参数 (CID=0x11)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "rhythm_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pump_side": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "rhythm_id": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "韵律编号",
+                  "multipleOf": 1
+                },
+                "rhythm_name": {
+                  "type": "string",
+                  "description": "韵律名称，UTF-8 编码"
+                },
+                "mode_ref_list": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "mode_seq": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "模式序号（1 开始递增）",
+                        "multipleOf": 1
+                      },
+                      "mode_id": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255,
+                        "description": "引用的模式 ID",
+                        "multipleOf": 1
+                      },
+                      "mode_time": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 65535,
+                        "description": "模式执行时长（秒）",
+                        "multipleOf": 1
+                      }
+                    },
+                    "required": [
+                      "mode_seq",
+                      "mode_id",
+                      "mode_time"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "rhythm_id",
+                "mode_ref_list"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "rhythm_list"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    "get_rhythm_parameters": {
+      "name": "获取设备韵律参数 (CID=0x12)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "pump_side": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "multipleOf": 1
+          },
+          "rhythm_id": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "过滤：韵律编号。不携带则返回全部",
+            "multipleOf": 1
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "rhythm_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pump_side": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "rhythm_id": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "韵律编号",
+                  "multipleOf": 1
+                },
+                "rhythm_name": {
+                  "type": "string",
+                  "description": "韵律名称，UTF-8 编码"
+                },
+                "mode_ref_list": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "mode_seq": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "模式序号（1 开始递增）",
+                        "multipleOf": 1
+                      },
+                      "mode_id": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255,
+                        "description": "引用的模式 ID",
+                        "multipleOf": 1
+                      },
+                      "mode_time": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 65535,
+                        "description": "模式执行时长（秒）",
+                        "multipleOf": 1
+                      }
+                    },
+                    "required": [
+                      "mode_seq",
+                      "mode_id",
+                      "mode_time"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "rhythm_id",
+                "mode_ref_list"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "rhythm_list"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "get_rhythm_status": {
+      "name": "获取设备韵律状态 (CID=0x13)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "pump_side": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "multipleOf": 1
+          },
+          "rhythm_id": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "过滤：韵律编号。不携带则返回全部",
+            "multipleOf": 1
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "rhythm_status_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pump_side": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "作用对象标识符（如果不携带，则默认全部）0x00：Left 0x01：Right0x02：Sync0x03：independence",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "rhythm_status": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "0x00=running，0x01=paused",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                },
+                "rhythm_id": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "当前工作韵律编号",
+                  "multipleOf": 1
+                },
+                "mode_seq": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "当前运行的模式序号",
+                  "multipleOf": 1
+                },
+                "rhythm_time_left": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 65535,
+                  "description": "当前工作韵律剩余时长（秒）",
+                  "multipleOf": 1
+                }
+              },
+              "required": [
+                "rhythm_status",
+                "rhythm_id",
+                "mode_seq",
+                "rhythm_time_left"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "rhythm_status_list"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "report_raw_algorithm_data": {
+      "name": "上报原始算法数据 (SID=0x10，CID=0x14)",
+      "input": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "raw_data_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pump_side": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "作用对象标识符（不携带，则默认全部）0x00: Left0x01: Right0x03: independence",
+                  "enum": [
+                    0,
+                    1,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "raw_algo_data": {
+                  "type": "string",
+                  "description": "算法原始数据",
+                  "minLength": 126,
+                  "maxLength": 126
+                }
+              },
+              "required": [
+                "raw_algo_data"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "raw_data_list"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "set_raw_algorithm_report": {
+      "name": "上报原始算法数据开关 (SID=0x10，CID=0x15)",
+      "input": {
+        "type": "object",
+        "properties": {
+          "raw_algo_switch_list": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "pump_side": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "作用对象标识符（不携带，则默认全部）0x00: Left0x01: Right0x02: Sync0x03: independence",
+                  "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                  ],
+                  "multipleOf": 1
+                },
+                "raw_algo_report_enable": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 255,
+                  "description": "使能和关闭原始算法数据上报0x00: disable（停止上报 CID=0x14 Notify）0x01: enable（开启/恢复上报 CID=0x14 Notify）",
+                  "enum": [
+                    0,
+                    1
+                  ],
+                  "multipleOf": 1
+                }
+              },
+              "required": [
+                "raw_algo_report_enable"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "raw_algo_switch_list"
+        ],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    }
+  }
+}
