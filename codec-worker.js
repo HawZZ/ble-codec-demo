@@ -6,35 +6,73 @@ async function initialize() {
   self.postMessage({ type: 'progress', message: '首次加载浏览器引擎，请稍候…' });
   const originalFetch = self.fetch.bind(self);
   const vendorRoot = new URL('./vendor/pyodide/', self.location.href).href;
-  let received = 0;
-  // Pages serves precompressed WASM as an ordinary gzip file. Decode it using
-  // the browser's standard stream API; retain the raw WASM fallback.
+  let received = 0, lastProgress = 0;
+  const progress = message => self.postMessage({ type: 'progress', message });
+  // Each resource gets one retry. The deadline measures inactivity, not total
+  // transfer time: a slow but progressing download must be allowed to finish.
+  async function download(input, options) {
+    const name = new URL(typeof input === 'string' || input instanceof URL ? input : input.url, self.location.href).pathname.split('/').pop();
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const controller = new AbortController();
+      let timer, reader;
+      const touch = () => { clearTimeout(timer); timer = setTimeout(() => controller.abort(), 60000); };
+      try {
+        progress(`正在下载 ${name}${attempt ? ' · 重试1/1' : ''}…`);
+        touch();
+        const response = await originalFetch(input, { ...options, signal: controller.signal });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        if (!response.body) throw new Error('响应缺少内容');
+        reader = response.body.getReader();
+        const chunks = [];
+        let size = 0;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          touch();
+          chunks.push(value);
+          size += value.byteLength;
+          received += value.byteLength;
+          if (Date.now() - lastProgress >= 250) {
+            progress(`正在下载 ${name} · 已接收 ${(received / 1048576).toFixed(1)} MB`);
+            lastProgress = Date.now();
+          }
+        }
+        const bytes = new Uint8Array(size);
+        let offset = 0;
+        for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+        const headers = new Headers(response.headers);
+        headers.delete('Content-Length');
+        headers.delete('Content-Encoding');
+        return new Response(bytes, { status: response.status, statusText: response.statusText, headers });
+      } catch (error) {
+        if (reader) await reader.cancel().catch(() => {});
+        if (attempt) throw new Error(`${name} 下载失败：${error.name === 'AbortError' ? '连续60秒未收到数据' : error.message}`);
+      } finally { clearTimeout(timer); }
+    }
+  }
   self.fetch = async (input, options) => {
     const url = new URL(typeof input === 'string' || input instanceof URL ? input : input.url, self.location.href).href;
-    if (!url.startsWith(vendorRoot)) return originalFetch(input, options);
-    const compressed = url.endsWith('/pyodide.asm.wasm') && typeof DecompressionStream !== 'undefined';
-    const response = await originalFetch(compressed ? url + '.gz' : input, options);
-    if (!response.ok || !response.body) return response;
-    const counted = response.body.pipeThrough(new TransformStream({
-      transform(chunk, controller) {
-        received += chunk.byteLength;
-        self.postMessage({ type: 'progress', message: `正在下载引擎 · 已接收 ${(received / 1048576).toFixed(1)} MB` });
-        controller.enqueue(chunk);
+    if (url === vendorRoot + 'pyodide.asm.wasm' && typeof DecompressionStream !== 'undefined') {
+      try {
+        const response = await download(url + '.gz', options);
+        // Finish decompression here, so corrupted gzip also takes the raw fallback.
+        const bytes = await new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+        return new Response(bytes, { headers: { 'Content-Type': 'application/wasm' } });
+      } catch (error) {
+        progress('压缩引擎不可用，正在切换原始WASM…');
       }
-    }));
-    const body = compressed ? counted.pipeThrough(new DecompressionStream('gzip')) : counted;
-    const headers = new Headers(response.headers);
-    headers.delete('Content-Length');
-    headers.delete('Content-Encoding');
-    if (compressed) headers.set('Content-Type', 'application/wasm');
-    return new Response(body, { status: response.status, statusText: response.statusText, headers });
+    }
+    if (url.startsWith(vendorRoot) || url.includes('/runtime-files.json')) return download(input, options);
+    return originalFetch(input, options);
   };
   importScripts('./vendor/pyodide/pyodide.js');
   const pyodide = await loadPyodide({ indexURL: new URL('./vendor/pyodide/', self.location.href).href });
   self.postMessage({ type: 'progress', message: '正在加载模型校验组件…' });
   await pyodide.loadPackage('jsonschema');
   self.postMessage({ type: 'progress', message: '正在载入字典编译器…' });
-  const response = await fetch('./runtime-files.json', { cache: 'no-store' });
+  const runtimeUrl = new URL('./runtime-files.json', self.location.href);
+  runtimeUrl.search = self.location.search;
+  const response = await fetch(runtimeUrl.href);
   if (!response.ok) throw new Error('无法加载编解码引擎文件');
   const files = await response.json();
   for (const [path, text] of Object.entries(files)) {
@@ -68,6 +106,7 @@ def browser_dispatch(path, body):
     except (ValueError, KeyError, TypeError, AttributeError, RecursionError) as error:
         return json.dumps(dict(ok=False, error='CONFIG_INVALID', message='配置格式错误：' + str(error)), ensure_ascii=False)
 `);
+  self.postMessage({ type: 'ready' });
   return pyodide;
 }
 

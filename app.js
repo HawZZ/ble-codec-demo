@@ -196,6 +196,7 @@
     const text = $('serverStatusText');
     if (!wrapper || !text) return;
     wrapper.dataset.state = status;
+    if ($('retryEngineBtn')) $('retryEngineBtn').hidden = !window.BLEBrowserRuntime || status !== 'offline';
     text.textContent = status === 'online'
       ? '浏览器引擎已就绪'
       : status === 'offline'
@@ -239,7 +240,9 @@
 
   async function requestJson(url, options = {}) {
     if (window.BLEBrowserRuntime) {
-      const body = await window.BLEBrowserRuntime.request(url, options);
+      let body;
+      try { body = await window.BLEBrowserRuntime.request(url, options); }
+      catch (error) { throw new ApiError(error.code || 'ENGINE_STARTUP', error.message, 0); }
       if (body?.ok !== true) throw new ApiError(body?.error || 'ENGINE_ERROR', body?.message || '转换失败', 400);
       return body;
     }
@@ -2520,6 +2523,15 @@
     state.draft = readStoredDraft();
     configUI = window.BleConfigUI.create({state, $, showToast, guardJsonDraft, markWorkspaceEdited, renderModelEditor, renderTable, nodeById, openCreateRoot, openCreateMethod, openEditNode, openEditMethod, openAddChild, deleteNodeById, bindDialogBackdrop, typeLabel, schemaConstraintText});
     bindEvents();
+    window.addEventListener('ble-engine-failure', ({ detail }) => {
+      setServerState('offline');
+      setGlobalNotice(`${detail.code} · ${detail.message}`);
+    });
+    $('retryEngineBtn').addEventListener('click', async () => {
+      window.BLEBrowserRuntime.restart();
+      await loadBootstrap();
+      if (state.server === 'online' && countCommands()) compileWorkspace(false);
+    });
     renderAll();
     loadBootstrap();
   }
