@@ -6,10 +6,10 @@
   <meta name="color-scheme" content="light">
   <meta name="description" content="BLE 应用层 PDU 离线编解码实验台。">
   <title>BLE 编解码实验台</title>
-  <link rel="stylesheet" href="./app.css?v=7d53916a121b42c7">
-  <script src="./configuration-editor.js?v=7d53916a121b42c7" defer></script>
-  <script src="./browser-runtime.js?v=7d53916a121b42c7" defer></script>
-  <script src="./app.js?v=7d53916a121b42c7" defer></script>
+  <link rel="stylesheet" href="./app.css?v=f3afcdba8fdde055">
+  <script src="./configuration-editor.js?v=f3afcdba8fdde055" defer></script>
+  <script src="./browser-runtime.js?v=f3afcdba8fdde055" defer></script>
+  <script src="./app.js?v=f3afcdba8fdde055" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">跳到主要内容</a>
@@ -619,25 +619,37 @@
         <div class="node-schema-fields" id="nodeSchemaFields">
           <div class="node-select-row">
             <label class="form-control">
-              <span>节点类型</span>
+              <span>平台数据类型</span>
               <select class="select" id="nodeType">
                 <option value="object">对象 object</option>
                 <option value="array">数组 array</option>
-                <option value="string">字符串 string</option>
-                <option value="integer">整数 integer</option>
-                <option value="number">数字 number</option>
-                <option value="boolean">布尔 boolean</option>
+                <option value="Int32">整型 Int32</option>
+                <option value="Float">浮点 Float</option>
+                <option value="Double">双精度 Double</option>
+                <option value="Enum">枚举 Enum</option>
+                <option value="Bool">布尔 Bool</option>
+                <option value="String">字符 String</option>
+                <option value="integer" hidden>integer（旧文件，未声明平台类型）</option>
+                <option value="number" hidden>number（旧文件，未声明平台类型）</option>
+                <option value="boolean" hidden>boolean（旧文件，未声明平台类型）</option>
+                <option value="string" hidden>string（旧文件，未声明平台类型）</option>
               </select>
             </label>
             <label class="form-control" id="arrayItemTypeWrap" hidden>
               <span>数组元素类型</span>
               <select class="select" id="arrayItemType">
                 <option value="object">对象 object</option>
-                <option value="string">字符串 string</option>
-                <option value="integer">整数 integer</option>
-                <option value="number">数字 number</option>
-                <option value="boolean">布尔 boolean</option>
                 <option value="array">数组 array</option>
+                <option value="Int32">整型 Int32</option>
+                <option value="Float">浮点 Float</option>
+                <option value="Double">双精度 Double</option>
+                <option value="Enum">枚举 Enum</option>
+                <option value="Bool">布尔 Bool</option>
+                <option value="String">字符 String</option>
+                <option value="integer" hidden>integer（旧文件，未声明平台类型）</option>
+                <option value="number" hidden>number（旧文件，未声明平台类型）</option>
+                <option value="boolean" hidden>boolean（旧文件，未声明平台类型）</option>
+                <option value="string" hidden>string（旧文件，未声明平台类型）</option>
               </select>
             </label>
             <label class="form-control" id="propertyAccessWrap" hidden><span>属性读写权限</span><select class="select" id="propertyAccess"><option value="rw">可读可写 rw</option><option value="r">只读 r</option><option value="w">只写 w</option></select></label>
@@ -669,7 +681,7 @@
               <textarea class="input textarea-small" id="nodeEnum" rows="3" placeholder="每行一个值，例如：&#10;0&#10;1&#10;2"></textarea>
             </label>
           </div>
-          <p class="constraint-footnote">对象始终按封闭结构保存（additionalProperties=false）；字符串如需原始字节，可在 JSON 中声明受支持的 format: "hex"。</p>
+          <p class="constraint-footnote">平台类型与BLE线上类型独立，例如Int32可绑定u8。Float／Double保留各自精度声明，JSON显示工程值；平台存储时按所选精度转换。Enum每行一个整数或字符串，同一集合类型须一致。旧文件未声明平台类型时保持原义。</p>
         </div>
 
         <div class="node-warning" id="nodeWarning">

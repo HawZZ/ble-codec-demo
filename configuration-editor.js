@@ -108,7 +108,7 @@
     function schemaSummary(schema) {
       if (!schema) return '未定义';
       if (schema.type === 'object') {const keys=Object.keys(schema.properties || {});return keys.length ? `${keys.length} 个字段：${keys.slice(0,3).join('、')}${keys.length>3?'…':''}`:'无参数';}
-      if (schema.type === 'array') return `${schema.items?.type==='object'?'对象':schema.items?.type||'未定义'}数组${schema.items?.properties?' · 每项 '+Object.keys(schema.items.properties).length+' 个字段':''}${schema.maxItems!=null?' · 最多 '+schema.maxItems+' 项':''}`;
+      if (schema.type === 'array') return `${schema.items?.type==='object'?'对象':schema.items?.platformType||schema.items?.type||'未定义'}数组${schema.items?.properties?' · 每项 '+Object.keys(schema.items.properties).length+' 个字段':''}${schema.maxItems!=null?' · 最多 '+schema.maxItems+' 项':''}`;
       const parts=[];
       if(schema.enum)parts.push('枚举：'+schema.enum.slice(0,6).map(v=>typeof v==='string'?v:JSON.stringify(v)).join('、')+(schema.enum.length>6?'…':''));
       else if(schema.minimum!=null||schema.maximum!=null)parts.push('范围：'+(schema.minimum??'不限')+'～'+(schema.maximum??'不限'));

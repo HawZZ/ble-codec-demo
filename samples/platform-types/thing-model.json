@@ -1,0 +1,93 @@
+{
+  "id": "platform-types-teaching",
+  "name": "平台类型与BLE编码分层（合成实验）",
+  "format": "thing-model-definition/1.0",
+  "version": "demo-platform-types-1",
+  "properties": {
+    "temperature": {
+      "type": "integer",
+      "platformType": "Int32",
+      "title": "温度",
+      "minimum": 0,
+      "maximum": 100,
+      "multipleOf": 1,
+      "access": "rw"
+    },
+    "ratio": {
+      "type": "number",
+      "platformType": "Float",
+      "title": "单精度比例",
+      "minimum": 0,
+      "maximum": 10,
+      "multipleOf": 0.1,
+      "access": "rw"
+    },
+    "measurement": {
+      "type": "number",
+      "platformType": "Double",
+      "title": "双精度读数",
+      "minimum": 0,
+      "maximum": 100,
+      "multipleOf": 0.01,
+      "access": "rw"
+    },
+    "mode": {
+      "type": "integer",
+      "platformType": "Enum",
+      "title": "模式",
+      "enum": [
+        0,
+        1,
+        2
+      ],
+      "access": "rw"
+    },
+    "enabled": {
+      "type": "boolean",
+      "platformType": "Bool",
+      "title": "开关",
+      "access": "rw"
+    },
+    "label": {
+      "type": "string",
+      "platformType": "String",
+      "title": "名称",
+      "maxLength": 32,
+      "access": "rw"
+    },
+    "levels": {
+      "type": "array",
+      "platformType": "array",
+      "title": "档位列表",
+      "items": {
+        "type": "integer",
+        "platformType": "Int32",
+        "minimum": 0,
+        "maximum": 255
+      },
+      "maxItems": 8,
+      "access": "rw"
+    },
+    "settings": {
+      "type": "object",
+      "platformType": "object",
+      "title": "嵌套配置",
+      "properties": {
+        "threshold": {
+          "type": "number",
+          "platformType": "Float",
+          "minimum": 0,
+          "maximum": 10,
+          "multipleOf": 0.1
+        }
+      },
+      "required": [
+        "threshold"
+      ],
+      "additionalProperties": false,
+      "access": "rw"
+    }
+  },
+  "events": {},
+  "services": {}
+}

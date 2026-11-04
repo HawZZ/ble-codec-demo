@@ -1,0 +1,421 @@
+{
+  "requiredCapabilities": [
+    "model-reference/1",
+    "nested-tlv/1",
+    "platform-types/1",
+    "receive-only/1",
+    "tlv-length-1-2/1"
+  ],
+  "format": "ble-thing-mapping/1",
+  "commands": [
+    {
+      "id": "write_temperature",
+      "target": {
+        "kind": "property",
+        "identifier": "temperature",
+        "behavior": "write"
+      },
+      "sid": "80",
+      "cid": "01",
+      "interaction": "one_way",
+      "receiveVariants": [],
+      "correlation": "none",
+      "source": "合成教学实验；80属于临时实验段，非产品正式编号",
+      "availability": "active",
+      "request": [
+        {
+          "field": "temperature",
+          "tlv": "01",
+          "wireType": "u8",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "report_temperature",
+      "target": {
+        "kind": "property",
+        "identifier": "temperature",
+        "behavior": "report"
+      },
+      "sid": "80",
+      "cid": "02",
+      "interaction": "receive_only",
+      "receiveVariants": [
+        "incoming"
+      ],
+      "correlation": "none",
+      "source": "合成教学实验；80属于临时实验段，非产品正式编号",
+      "availability": "active",
+      "incoming": [
+        {
+          "field": "temperature",
+          "tlv": "01",
+          "wireType": "u8",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "write_ratio",
+      "target": {
+        "kind": "property",
+        "identifier": "ratio",
+        "behavior": "write"
+      },
+      "sid": "80",
+      "cid": "03",
+      "interaction": "one_way",
+      "receiveVariants": [],
+      "correlation": "none",
+      "source": "合成教学实验；80属于临时实验段，非产品正式编号",
+      "availability": "active",
+      "request": [
+        {
+          "field": "ratio",
+          "tlv": "01",
+          "wireType": "u8",
+          "required": true,
+          "scale": "0.1"
+        }
+      ]
+    },
+    {
+      "id": "report_ratio",
+      "target": {
+        "kind": "property",
+        "identifier": "ratio",
+        "behavior": "report"
+      },
+      "sid": "80",
+      "cid": "04",
+      "interaction": "receive_only",
+      "receiveVariants": [
+        "incoming"
+      ],
+      "correlation": "none",
+      "source": "合成教学实验；80属于临时实验段，非产品正式编号",
+      "availability": "active",
+      "incoming": [
+        {
+          "field": "ratio",
+          "tlv": "01",
+          "wireType": "u8",
+          "required": true,
+          "scale": "0.1"
+        }
+      ]
+    },
+    {
+      "id": "write_measurement",
+      "target": {
+        "kind": "property",
+        "identifier": "measurement",
+        "behavior": "write"
+      },
+      "sid": "80",
+      "cid": "05",
+      "interaction": "one_way",
+      "receiveVariants": [],
+      "correlation": "none",
+      "source": "合成教学实验；80属于临时实验段，非产品正式编号",
+      "availability": "active",
+      "request": [
+        {
+          "field": "measurement",
+          "tlv": "01",
+          "wireType": "u16",
+          "required": true,
+          "scale": "0.01"
+        }
+      ]
+    },
+    {
+      "id": "report_measurement",
+      "target": {
+        "kind": "property",
+        "identifier": "measurement",
+        "behavior": "report"
+      },
+      "sid": "80",
+      "cid": "06",
+      "interaction": "receive_only",
+      "receiveVariants": [
+        "incoming"
+      ],
+      "correlation": "none",
+      "source": "合成教学实验；80属于临时实验段，非产品正式编号",
+      "availability": "active",
+      "incoming": [
+        {
+          "field": "measurement",
+          "tlv": "01",
+          "wireType": "u16",
+          "required": true,
+          "scale": "0.01"
+        }
+      ]
+    },
+    {
+      "id": "write_mode",
+      "target": {
+        "kind": "property",
+        "identifier": "mode",
+        "behavior": "write"
+      },
+      "sid": "80",
+      "cid": "07",
+      "interaction": "one_way",
+      "receiveVariants": [],
+      "correlation": "none",
+      "source": "合成教学实验；80属于临时实验段，非产品正式编号",
+      "availability": "active",
+      "request": [
+        {
+          "field": "mode",
+          "tlv": "01",
+          "wireType": "u8",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "report_mode",
+      "target": {
+        "kind": "property",
+        "identifier": "mode",
+        "behavior": "report"
+      },
+      "sid": "80",
+      "cid": "08",
+      "interaction": "receive_only",
+      "receiveVariants": [
+        "incoming"
+      ],
+      "correlation": "none",
+      "source": "合成教学实验；80属于临时实验段，非产品正式编号",
+      "availability": "active",
+      "incoming": [
+        {
+          "field": "mode",
+          "tlv": "01",
+          "wireType": "u8",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "write_enabled",
+      "target": {
+        "kind": "property",
+        "identifier": "enabled",
+        "behavior": "write"
+      },
+      "sid": "80",
+      "cid": "09",
+      "interaction": "one_way",
+      "receiveVariants": [],
+      "correlation": "none",
+      "source": "合成教学实验；80属于临时实验段，非产品正式编号",
+      "availability": "active",
+      "request": [
+        {
+          "field": "enabled",
+          "tlv": "01",
+          "wireType": "bool",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "report_enabled",
+      "target": {
+        "kind": "property",
+        "identifier": "enabled",
+        "behavior": "report"
+      },
+      "sid": "80",
+      "cid": "0A",
+      "interaction": "receive_only",
+      "receiveVariants": [
+        "incoming"
+      ],
+      "correlation": "none",
+      "source": "合成教学实验；80属于临时实验段，非产品正式编号",
+      "availability": "active",
+      "incoming": [
+        {
+          "field": "enabled",
+          "tlv": "01",
+          "wireType": "bool",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "write_label",
+      "target": {
+        "kind": "property",
+        "identifier": "label",
+        "behavior": "write"
+      },
+      "sid": "80",
+      "cid": "0B",
+      "interaction": "one_way",
+      "receiveVariants": [],
+      "correlation": "none",
+      "source": "合成教学实验；80属于临时实验段，非产品正式编号",
+      "availability": "active",
+      "request": [
+        {
+          "field": "label",
+          "tlv": "01",
+          "wireType": "utf8",
+          "required": true,
+          "maxBytes": "64"
+        }
+      ]
+    },
+    {
+      "id": "report_label",
+      "target": {
+        "kind": "property",
+        "identifier": "label",
+        "behavior": "report"
+      },
+      "sid": "80",
+      "cid": "0C",
+      "interaction": "receive_only",
+      "receiveVariants": [
+        "incoming"
+      ],
+      "correlation": "none",
+      "source": "合成教学实验；80属于临时实验段，非产品正式编号",
+      "availability": "active",
+      "incoming": [
+        {
+          "field": "label",
+          "tlv": "01",
+          "wireType": "utf8",
+          "required": true,
+          "maxBytes": "64"
+        }
+      ]
+    },
+    {
+      "id": "write_levels",
+      "target": {
+        "kind": "property",
+        "identifier": "levels",
+        "behavior": "write"
+      },
+      "sid": "80",
+      "cid": "0D",
+      "interaction": "one_way",
+      "receiveVariants": [],
+      "correlation": "none",
+      "source": "合成教学实验；80属于临时实验段，非产品正式编号",
+      "availability": "active",
+      "request": [
+        {
+          "field": "levels",
+          "tlv": "01",
+          "wireType": "u8[]",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "report_levels",
+      "target": {
+        "kind": "property",
+        "identifier": "levels",
+        "behavior": "report"
+      },
+      "sid": "80",
+      "cid": "0E",
+      "interaction": "receive_only",
+      "receiveVariants": [
+        "incoming"
+      ],
+      "correlation": "none",
+      "source": "合成教学实验；80属于临时实验段，非产品正式编号",
+      "availability": "active",
+      "incoming": [
+        {
+          "field": "levels",
+          "tlv": "01",
+          "wireType": "u8[]",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "write_settings",
+      "target": {
+        "kind": "property",
+        "identifier": "settings",
+        "behavior": "write"
+      },
+      "sid": "80",
+      "cid": "0F",
+      "interaction": "one_way",
+      "receiveVariants": [],
+      "correlation": "none",
+      "source": "合成教学实验；80属于临时实验段，非产品正式编号",
+      "availability": "active",
+      "request": [
+        {
+          "field": "settings",
+          "tlv": "01",
+          "wireType": "object",
+          "required": true
+        },
+        {
+          "field": "settings.threshold",
+          "tlv": "01/02",
+          "wireType": "u8",
+          "required": true,
+          "scale": "0.1"
+        }
+      ]
+    },
+    {
+      "id": "report_settings",
+      "target": {
+        "kind": "property",
+        "identifier": "settings",
+        "behavior": "report"
+      },
+      "sid": "80",
+      "cid": "10",
+      "interaction": "receive_only",
+      "receiveVariants": [
+        "incoming"
+      ],
+      "correlation": "none",
+      "source": "合成教学实验；80属于临时实验段，非产品正式编号",
+      "availability": "active",
+      "incoming": [
+        {
+          "field": "settings",
+          "tlv": "01",
+          "wireType": "object",
+          "required": true
+        },
+        {
+          "field": "settings.threshold",
+          "tlv": "01/02",
+          "wireType": "u8",
+          "required": true,
+          "scale": "0.1"
+        }
+      ]
+    }
+  ],
+  "modelRef": {
+    "id": "platform-types-teaching",
+    "version": "demo-platform-types-1",
+    "sha256": "f325906a7bb273db39ab350d8d90900f8647a166b077e3259faa763798ffaa5f"
+  }
+}

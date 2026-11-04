@@ -671,9 +671,21 @@
     return { type: 'object', properties, required: [], additionalProperties: false };
   }
 
+  const platformShapes = {Int32:'integer',Float:'number',Double:'number',Bool:'boolean',String:'string',object:'object',array:'array'};
+  function selectedModelType(schema) { return schema?.platformType || schema?.type || 'object'; }
+  function jsonShape(type, schema={}) { return type==='Enum' ? (schema.type==='string'?'string':'integer') : platformShapes[type] || type; }
+  function applyPlatformType(schema, selected) {
+    const keepLegacyStructure=['object','array'].includes(selected)&&schema.type===selected&&!schema.platformType;
+    schema.type=jsonShape(selected,schema);
+    if(keepLegacyStructure)delete schema.platformType;
+    else if(Object.hasOwn(platformShapes,selected)||selected==='Enum')schema.platformType=selected;
+    else delete schema.platformType;
+  }
+
   function defaultSchemaForType(type) {
-    if (type === 'object') return closedObjectSchema();
-    if (type === 'array') return { type: 'array', items: { type: 'string' } };
+    if (type === 'object') return {...closedObjectSchema(),platformType:'object'};
+    if (type === 'array') return { type:'array',platformType:'array',items:defaultSchemaForType('String') };
+    if (Object.hasOwn(platformShapes,type)||type==='Enum') {const s={type:jsonShape(type),platformType:type};if(type==='Enum')s.enum=[0,1];return s;}
     if (type === 'integer' || type === 'number') return { type, minimum: 0 };
     if (type === 'boolean') return { type };
     return { type: 'string' };
@@ -685,8 +697,8 @@
 
   function typeLabel(schema) {
     if (!isObject(schema)) return 'unknown';
-    if (schema.type === 'array') return `array<${schema.items?.type || '?'}>`;
-    return schema.type || 'object';
+    if (schema.type === 'array') return `array<${typeLabel(schema.items)}>`;
+    return schema.platformType || (['object','array'].includes(schema.type) ? schema.type : `${schema.type || '?'}（平台类型未声明）`);
   }
 
   function schemaConstraintText(schema) {
@@ -1047,10 +1059,12 @@
     $('propertyAccess').value = editor.schema?.access || 'rw';
 
     if (schemaMode) {
-      const schema = editor.schema || defaultSchemaForType('string');
-      $('nodeType').value = schema.type || 'object';
+      const schema = editor.schema || defaultSchemaForType('String');
+      $('nodeType').value = selectedModelType(schema);
+      for(const option of $('nodeType').options)if(['integer','number','boolean','string'].includes(option.value))option.hidden=option.value!==selectedModelType(schema);
       $('nodeType').disabled = Boolean(editor.fixedObject);
-      $('arrayItemType').value = schema.items?.type || 'object';
+      $('arrayItemType').value = selectedModelType(schema.items);
+      for(const option of $('arrayItemType').options)if(['integer','number','boolean','string'].includes(option.value))option.hidden=option.value!==selectedModelType(schema.items);
       $('nodeRequired').checked = Boolean(editor.parentSchema && editor.intent === 'create' ? true : editor.parentRequired);
       $('nodeMinimum').value = schema.minimum ?? '';
       $('nodeMaximum').value = schema.maximum ?? '';
@@ -1074,7 +1088,8 @@
   function updateNodeDialogVisibility() {
     const editor = state.nodeEditor;
     if (!editor || editor.mode === 'method') return;
-    const type = $('nodeType').value;
+    const selected = $('nodeType').value;
+    const type = jsonShape(selected, editor.schema);
     $('arrayItemTypeWrap').hidden = type !== 'array';
     $('requiredFieldWrap').hidden = !editor.parentSchema;
     $('nodeConstraintFields').hidden = type === 'object';
@@ -1085,8 +1100,9 @@
     };
     for (const [id, types] of Object.entries(applicable)) {
       const control = $(id);
-      control.closest('label').hidden = !types.includes(type);
-      control.disabled = !types.includes(type);
+      const applicable=types.includes(type) || (id==='nodeEnum' && selected==='Enum');
+      control.closest('label').hidden = !applicable;
+      control.disabled = !applicable;
     }
   }
 
@@ -1097,7 +1113,7 @@
       intent: 'create',
       category,
       bucket: category,
-      schema: defaultSchemaForType(category === 'events' ? 'object' : 'string'),
+      schema: defaultSchemaForType(category === 'events' ? 'object' : 'String'),
       parentSchema: null,
       parentRequired: false,
       oldKey: '',
@@ -1115,7 +1131,7 @@
       intent: 'create',
       category: node.category,
       bucket: null,
-      schema: defaultSchemaForType('string'),
+      schema: defaultSchemaForType('String'),
       parentSchema: node.schema,
       parentRequired: true,
       oldKey: '',
@@ -1213,10 +1229,11 @@
   }
 
   function saveSchemaNode(editor, name) {
-    const type = editor.fixedObject ? 'object' : $('nodeType').value;
+    const selected = editor.fixedObject ? (editor.schema?.platformType || 'object') : $('nodeType').value;
+    const type = jsonShape(selected, editor.schema);
     const next = clone(isObject(editor.schema) ? editor.schema : {});
     if (editor.bucket === 'properties') next.access = $('propertyAccess').value;
-    next.type = type;
+    applyPlatformType(next,selected);
     const title = $('nodeTitle').value.trim();
     const description = $('nodeDescription').value.trim();
     if (title) next.title = title; else delete next.title;
@@ -1248,19 +1265,23 @@
     }
     const enumValues = parseEnumLines($('nodeEnum').disabled ? '' : $('nodeEnum').value);
     if (enumValues) next.enum = enumValues; else delete next.enum;
+    if(selected==='Enum') {
+      if(!enumValues?.length)throw new Error('Enum必须填写枚举值');
+      const strings=enumValues.every(v=>typeof v==='string'), integers=enumValues.every(v=>Number.isInteger(v)&&v>=-2147483648&&v<=2147483647);
+      if(!strings&&!integers)throw new Error('Enum值须为同类型的Int32整数或字符串');
+      next.type=strings?'string':'integer';
+      if(strings)removeSchemaKeys(next,['minimum','maximum','multipleOf']);
+      else delete next.format;
+    }
+    if(selected==='Int32'&&[minimum,maximum,...(enumValues||[])].some(v=>v!=null&&(!Number.isInteger(v)||v< -2147483648||v>2147483647)))throw new Error('Int32约束须在有符号32位整数范围内');
+    if(['Float','Double'].includes(selected)&&[minimum,maximum,...(enumValues||[])].some(v=>v!=null&&(!Number.isFinite(v)||(selected==='Float'&&(!Number.isFinite(Math.fround(v))||(v!==0&&Math.fround(v)===0))))))throw new Error(selected+'约束溢出或非零值下溢为0');
 
     if (type === 'array') {
-      const itemType = $('arrayItemType').value;
-      const item = isObject(next.items) ? next.items : {};
-      item.type = itemType;
-      if (itemType === 'object') {
-        item.properties = isObject(item.properties) ? item.properties : {};
-        item.required = Array.isArray(item.required) ? item.required : [];
-        item.additionalProperties = false;
-      } else {
-        removeSchemaKeys(item, ['properties', 'required', 'additionalProperties']);
-      }
-      if (itemType === 'array' && !isObject(item.items)) item.items = { type: 'string' };
+      const itemSelected = $('arrayItemType').value;
+      const previous = isObject(next.items) ? next.items : {};
+      const item = selectedModelType(previous)===itemSelected ? previous : defaultSchemaForType(itemSelected);
+      applyPlatformType(item,itemSelected);
+      normalizeSchemaForType(item,item.type);
       next.items = item;
     }
 

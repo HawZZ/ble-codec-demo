@@ -11,7 +11,7 @@ Demo默认按属性／事件／服务三个标签表格维护物模型，并保�
 
 内部指令ID由系统生成且保持稳定；格式、版本、模型引用和能力声明不要求人工填写。来源和备注作为说明；关联限制及已有超时只读保留。倍率1、数值偏移0无需重复配置；固定类型字节宽度自动确定。高级详情继续保留变长字节限制、成功码、上行属性更新和组合约束。业务范围、工程值步长与枚举不能只写在说明中，线上类型也不能只凭物模型类型推断。
 
-界面收起字段不意味着从机器文件删除语义。既有两文件、CSV、工作区及高级元数据仍按下文契约读写；本次仅调整维护入口，不变更格式版本、地址或报文字节。通过表格或结构树重命名会更新明确关联的引用；直接编辑JSON须校验现有映射，失败不替换有效模型。
+界面收起字段不意味着从机器文件删除语义。既有两文件、CSV、工作区及高级元数据仍按下文契约读写；维护入口的简化不删除语义；本轮增补platformType及能力校验，格式标识、地址及报文字节不变。通过表格或结构树重命名会更新明确关联的引用；直接编辑JSON须校验现有映射，失败不替换有效模型。
 
 ## 1. 唯一交换格式与权威定义
 
@@ -47,7 +47,19 @@ python3 tools/ble_two_file.py \
 
 `numeric_step_defaults`可给`integer`和`number`声明默认`multipleOf`，并固定`explicit_constraint_takes_precedence: true`。字段已声明的`multipleOf`优先于默认步长；系统不会用取整放宽该约束。
 
-属性值使用JSON Schema子集描述，支持`object`、`array`、`integer`、`number`、`boolean`和`string`。可声明`properties`、`items`、`required`、`minimum`、`maximum`、`multipleOf`、`enum`、`minItems`、`maxItems`、`minLength`、`maxLength`、`title`、`description`和`format: "hex"`。属性另有`access: "r" | "w" | "rw"`。对象必须关闭`additionalProperties`；数组必须声明`items`。
+平台／APP的物模型类型为`object`、`array`、`Int32`、`Float`、`Double`、`Enum`、`Bool`和`String`。BLE映射的`wireType`独立表达线上编码，不要求两者名称、宽度或类型一一相同。例如物模型Int32的温度0～100可以用BLE u8传输；25的TLV为`01 01 19`，Value仍为1B，不因平台使用Int32扩成4B。Int32的业务值还须处于−2147483648～2147483647内；线编码u32的完整值域不能直接视为Int32值域。
+
+节点新增`platformType`保存平台选择；JSON Schema的`type`由系统生成：Int32→integer、Float／Double→number、Bool→boolean、String→string、object／array保持原名。Enum必须有非空enum，允许同类型Int32整数或字符串，对应integer或string。维护者不重复填写两种类型；wireType继续在映射中独立配置。未知平台类型或不一致的type拒绝。
+
+```json
+{"type":"integer","platformType":"Int32","access":"rw","minimum":0,"maximum":100,"multipleOf":1}
+```
+
+使用platformType必须由系统声明`platform-types/1`能力；类型参与模型SHA和属性投影一致性检查，不能把Float与Double合并为未区分的number。不支持能力、漏报能力或两文件错配均拒绝。旧文件缺少platformType时保持原义，不自动猜测或补类型；新增语义不能通过删除系统引用进入旧裸模型兼容路径。两文件format保持不变，旧消费者应按能力声明拒绝新语义。
+
+Int32校验有符号32位整数值域；Float校验单精度有限范围，拒绝非零值下溢为0；Double校验双精度有限范围。模型声明范围、枚举和实际数据都适用。工程值及范围／步长／精确逆换算先按既有规则校验，禁止提前舍入放宽限制。浮点线编码f32／f64按报文实际值换算，不能把近似值恢复成猜测的小数；例如f32的0.1会得到约0.10000000149，若模型要求精确步长0.1则拒绝。需要严格十进制步长时应采用兼容的整数线值与倍率。JSON输出保存工程值，平台存储按所选Float／Double精度转换时可能舍入；Demo不模拟数据库存储，不承诺Float与Double具有相同有效精度。
+
+JSON子集继续支持properties、items、required、additionalProperties=false、minimum／maximum、multipleOf、enum、数组／字符串长度、title／description、format: "hex"和属性access。对象和数组内的每级节点也可保存platformType；旧约束和线上字节规则不变。
 
 服务声明`input`和`output`两个节点，可按产品定义增加`availability: "active" | "suspended"`。事件声明其上行数据节点。业务范围、枚举、步长、必填和结构约束在物模型维护，SID/CID、TLV路径和线宽只在映射维护。
 
@@ -126,7 +138,7 @@ python3 tools/ble_two_file.py \
 
 模型带ID或版本时，`modelRef`必须同时带上相同的ID和版本。消费者重新计算模型内容SHA，并拒绝两文件不配套的组合。
 
-`requiredCapabilities`由模型和映射实际使用能力计算，至少包括`model-reference/1`和`tlv-length-1-2/1`。使用属性更新、嵌套TLV、纯上行、重复对象、结果成功码或数值默认步长时，还必须分别声明`property-updates/1`、`nested-tlv/1`、`receive-only/1`、`repeated-object/1`、`result-success-code/1`或`numeric-defaults/1`。消费者拒绝未知能力和漏报能力。
+`requiredCapabilities`由模型和映射实际使用能力计算，至少包括`model-reference/1`和`tlv-length-1-2/1`。使用属性更新、嵌套TLV、纯上行、重复对象、结果成功码或数值默认步长时，还必须分别声明`property-updates/1`、`nested-tlv/1`、`receive-only/1`、`repeated-object/1`、`result-success-code/1`或`numeric-defaults/1`。模型包含platformType时还须声明`platform-types/1`；消费者拒绝未知能力和漏报能力。
 
 模型内容SHA256采用本项目`model-content v1`算法：
 
@@ -228,6 +240,8 @@ python3 tools/ble_two_file.py \
 ```
 
 收到应用PDU`80 01 01 01 05`时，入站布局数据为`{"level":5}`；物模型补丁同时包含服务输出`{"read_level":{"output":{"level":5}}}`和属性`{"level":5}`。它不说明某次请求已被精确匹配，也没有保存或合并完整设备状态。
+
+八类型合成样例位于`examples/ble-codec-demo/platform-types/`，可在Demo选择“平台类型 · 八种类型”，含Int32/u8、整数倍率到Float／Double、Enum、Bool、String、数组和嵌套。以下旧温度样例保留未声明平台类型的兼容路径。
 
 合成温度样例位于[`examples/ble-codec-demo/temperature.thing-model.json`](samples/temperature/thing-model.json)和[`temperature.ble-mapping.json`](samples/temperature/ble-mapping.json)，只映射一个属性，没有新增服务。完整Pump样例位于[`examples/ble-codec-demo/pump/`](samples/pump/thing-model.json)。样例存在不等于固件实现、实机报文或平台能力已经验收。
 

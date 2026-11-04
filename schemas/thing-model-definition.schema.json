@@ -204,6 +204,19 @@
             "w",
             "rw"
           ]
+        },
+        "platformType": {
+          "enum": [
+            "object",
+            "array",
+            "Int32",
+            "Float",
+            "Double",
+            "Enum",
+            "Bool",
+            "String"
+          ],
+          "description": "平台业务／存储类型，独立于BLE wireType；type是系统生成的JSON值形态。"
         }
       },
       "required": [
@@ -238,6 +251,164 @@
             "required": [
               "items"
             ]
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "platformType"
+            ],
+            "properties": {
+              "platformType": {
+                "const": "object"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "type": {
+                "const": "object"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "platformType"
+            ],
+            "properties": {
+              "platformType": {
+                "const": "array"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "type": {
+                "const": "array"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "platformType"
+            ],
+            "properties": {
+              "platformType": {
+                "const": "Int32"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "type": {
+                "const": "integer"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "platformType"
+            ],
+            "properties": {
+              "platformType": {
+                "const": "Float"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "type": {
+                "const": "number"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "platformType"
+            ],
+            "properties": {
+              "platformType": {
+                "const": "Double"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "type": {
+                "const": "number"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "platformType"
+            ],
+            "properties": {
+              "platformType": {
+                "const": "Bool"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "type": {
+                "const": "boolean"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "platformType"
+            ],
+            "properties": {
+              "platformType": {
+                "const": "String"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "type": {
+                "const": "string"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "platformType"
+            ],
+            "properties": {
+              "platformType": {
+                "const": "Enum"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "enum"
+            ],
+            "properties": {
+              "type": {
+                "enum": [
+                  "integer",
+                  "string"
+                ]
+              }
+            }
           }
         }
       ]

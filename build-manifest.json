@@ -1,5 +1,5 @@
 {
-  "buildId": "7d53916a121b42c7",
+  "buildId": "f3afcdba8fdde055",
   "pyodide": "0.28.3",
   "packages": {
     "attrs": "25.2.0",
@@ -25,16 +25,16 @@
       "sha256": "78b12c3a81360b357002334f0e70ea0e92eebf7a9b358805c03c48484945f3bb"
     },
     "README.md": {
-      "bytes": 2788,
-      "sha256": "0760549c48f47971bfc86d9ac9b518de622584789430eb12fbcf4867decdfe45"
+      "bytes": 3300,
+      "sha256": "2eefcfe2ad40c6d719e5cf4473529c71cbce411d69ecae2bd26e569520a6eed4"
     },
     "app.css": {
       "bytes": 63355,
       "sha256": "9cdb847197f65ea060fd2994c870221107b6a6b426faa7024a1ab009d5d50751"
     },
     "app.js": {
-      "bytes": 104147,
-      "sha256": "1a3c1449008d542ada9ebf9bf2cca02aa42c04cebf6ea1e01fe5b0ef698d4c58"
+      "bytes": 106560,
+      "sha256": "6886b0f6cc9c28d8019726340bfd0b87d4f413dc5b1f4975278fec8d6c1b3f5d"
     },
     "browser-runtime.js": {
       "bytes": 1789,
@@ -45,16 +45,24 @@
       "sha256": "2c8f4152ce818dbc2c618b5b6c2be7eec016d9ad936394cafd5af4e049a7cafb"
     },
     "configuration-editor.js": {
-      "bytes": 36633,
-      "sha256": "34f3867d514a82057e85048fa94b3d8a052e11be77694c6d07aa2f4febc67822"
+      "bytes": 36661,
+      "sha256": "4052d57cf98a4192df1ada236b0fa97ddcc16a5d620b8d59d7d4deef174024f7"
     },
     "index.html": {
-      "bytes": 39611,
-      "sha256": "5de43da7a7875a385106c11985bfda0eeb361be74619e650633b4f4991a806ab"
+      "bytes": 40782,
+      "sha256": "59159a29d40553bdadbba0d82022de4509905b2f01d5bd22944e538701eecf63"
     },
     "runtime-files.json": {
-      "bytes": 490810,
-      "sha256": "ec4206557f974b9cf89017f7c4cdbd5520c004cb8a46f605f9a11abe66b0ba6d"
+      "bytes": 514380,
+      "sha256": "79eab8493e8e7db3efd81a296b0dfa676b7bf06bf678de6b4d551e314482393a"
+    },
+    "samples/platform-types/ble-mapping.json": {
+      "bytes": 10160,
+      "sha256": "d358195284abda901e541f16db2a6168c8cf002b08fc58b6d92711f98e3ca3cf"
+    },
+    "samples/platform-types/thing-model.json": {
+      "bytes": 1991,
+      "sha256": "2170632395121a8bad3998d578c533f9f274cf8d65b702fa1f5eef9d51c437d4"
     },
     "samples/pump/ble-mapping.json": {
       "bytes": 56669,
@@ -77,12 +85,12 @@
       "sha256": "dd8f103c34804511535bdab622f4ea4b85fc300f994f8757fabc281bf813b19a"
     },
     "schemas/thing-model-definition.schema.json": {
-      "bytes": 5016,
-      "sha256": "82ce5c79537a13369ba07214ccbf65cf95f0c5bec28e0b56183b9eb054797702"
+      "bytes": 8648,
+      "sha256": "cbbfbd6dcb5eb0033a17da857cf3235acbd9d9544113761ff26c4bca6a5c6547"
     },
     "two-file-contract.md": {
-      "bytes": 17637,
-      "sha256": "ad9e153f9cd1ac461423eef5df6196214454696128e40a3c489d2415168e69e3"
+      "bytes": 20093,
+      "sha256": "29a022f0ab482d53be061c9278135b431ef2d6e7a7f6090516037a73e7340895"
     },
     "vendor/pyodide/attrs-25.2.0-py3-none-any.whl": {
       "bytes": 64016,
