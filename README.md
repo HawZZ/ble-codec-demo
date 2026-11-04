@@ -26,3 +26,5 @@
 
 
 平台类型已支持：物模型选择object、array、Int32、Float、Double、Enum、Bool、String；系统保存platformType与对应JSON值形态，BLE wireType单独选择。导入导出保留Float／Double区别和能力声明；旧文件不猜平台类型。预置“平台类型 · 八种类型”含Int32/u8、整数倍率、数组与嵌套。范围、枚举、步长和精确逆换算继续校验；Float检查溢出及非零值下溢为0。输出显示工程值，不模拟数据库存储舍入。
+
+整数Enum可使用u8等整数编码；Int32／Float／Double属于number数值范畴但保留各自平台类型与约束。Bool可使用bool或u8／u16／u32／i8／i16／i32，严格false=0、true=1，不接受其他整数，不使用倍率偏移；系统自动声明boolean-integer/1能力。

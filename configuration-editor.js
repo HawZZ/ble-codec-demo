@@ -214,7 +214,7 @@
       } else if(table==='bindings') {
         const cmd=currentCommand();const paths=schemaPaths(rootsFor(cmd,role));
         const types=state.wireTypes.map(t=>[t,t]);
-        html='<div class="form-grid">'+field('业务字段',select('mapField',paths,old?.model_path??(paths[1]?.[0]||'')))+field('TLV地址',input('mapTlv',old?.tlv_path||'','placeholder="例如 01 或 01/02"'))+field('线上类型',select('mapWire',types,old?.wire_type||'u8'))+field('是否必带',select('mapRequired',[['M','必带'],['O','可选']],old?.required||'M'))+'</div><p class="readonly-note" id="mapWidth"></p>';
+        html='<div class="form-grid">'+field('业务字段',select('mapField',paths,old?.model_path??(paths[1]?.[0]||'')))+field('TLV地址',input('mapTlv',old?.tlv_path||'','placeholder="例如 01 或 01/02"'))+field('线上类型',select('mapWire',types,old?.wire_type||'u8'))+field('是否必带',select('mapRequired',[['M','必带'],['O','可选']],old?.required||'M'))+'</div><p class="readonly-note" id="mapWidth"></p><p class="readonly-note">平台类型与线上编码分别维护。整数Enum可用u8等编码；Int32、Float、Double属于number数值范畴，各自约束仍有效。Bool可选bool或整数编码：false=0、true=1（例如u16为00 00／00 01），其他整数拒绝；倍率须为1、偏移须为0。</p>';
         html+='<details class="editor-advanced"><summary>换算、长度与特殊结构</summary><div class="form-grid">'+field('倍率（默认1）',input('mapScale',old?.scale||'','placeholder="1"'))+field('数值偏移（默认0）',input('mapOffset',old?.offset||'','placeholder="0"'))+field('最大Value字节数（变长字段）',input('mapMaxBytes',old?.max_bytes||'','inputmode="numeric"'))+'</div><p>对象、数组、重复对象及分组仍使用已有容器编码。每一级容器需有明确映射；业务字段不能代替线上类型。</p></details>';
         $('mappingFields').innerHTML=html;
         const update=()=>{$('mapWidth').textContent=width[$('mapWire').value]?`固定宽度 ${width[$('mapWire').value]} B，TLV Length自动生成。`:'变长或容器类型：Length按实际编码内容生成。';};$('mapWire').onchange=update;update();
