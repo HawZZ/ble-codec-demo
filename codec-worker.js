@@ -1,4 +1,4 @@
-/* All assets and dependencies are served from this independent Pages site. */
+/* Verified public engine bundle: pinned CDN plus independent Pages fallback. */
 let engine;
 let queue = Promise.resolve();
 
@@ -25,16 +25,19 @@ async function initialize() {
   const received={vendor:vendorDone?manifest.bundle.bytes:0,runtime:runtimeDone?53000:0};
   let high=2,last=0;
   function update(kind,bytes){received[kind]=Math.max(received[kind],bytes);high=Math.max(high,Math.min(85,Math.floor((received.vendor+received.runtime)/(manifest.bundle.bytes+53000)*85)));if(Date.now()-last>150){progress('正在下载并校验引擎资源',high);last=Date.now();}}
-  async function transfer(url,kind){
+  async function transfer(url,kind,signal){
     let error;
     for(let attempt=0;attempt<2;attempt++){
       const c=new AbortController();let timer,reader;
+      const abort=()=>c.abort();
+      if(signal?.aborted)throw new Error('Download cancelled');
+      signal?.addEventListener('abort',abort,{once:true});
       const touch=()=>{clearTimeout(timer);timer=setTimeout(()=>c.abort(),60000);};
       try{touch();const response=await nativeFetch(url,{signal:c.signal});if(!response.ok||!response.body)throw new Error('HTTP '+response.status);
         reader=response.body.getReader();const chunks=[];let size=0;
         while(true){const {done,value}=await reader.read();if(done)break;touch();chunks.push(value);size+=value.length;update(kind,size);}
         const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}return bytes;
-      }catch(e){error=e;}finally{clearTimeout(timer);if(c.signal.aborted&&reader)reader.cancel().catch(()=>{});}
+      }catch(e){if(signal?.aborted)throw e;error=e;}finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);if(c.signal.aborted&&reader)reader.cancel().catch(()=>{});}
     }throw error;
   }
   async function gunzip(bytes){return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());}
@@ -46,10 +49,17 @@ async function initialize() {
     }
     const bundle=manifest.bundle;
     let compressed;
-    const verified=async url=>{const bytes=await transfer(url,'vendor');if(bytes.length!==bundle.bytes||await digest(bytes)!==bundle.sha256)throw new Error('引擎包校验不匹配');return bytes;};
+    const verified=async(url,signal)=>{const bytes=await transfer(url,'vendor',signal);if(bytes.length!==bundle.bytes||await digest(bytes)!==bundle.sha256)throw new Error('引擎包校验不匹配');return bytes;};
     if(bundle.revision){
-      try{compressed=await verified('https://cdn.jsdelivr.net/gh/HawZZ/ble-codec-demo@'+bundle.revision+'/'+bundle.path);}
-      catch(_){compressed=await verified(new URL(bundle.path+version,root).href);}
+      const cdn=new AbortController(),site=new AbortController();let timer,startSite;
+      const fallback=new Promise((resolve,reject)=>{
+        let started=false;
+        startSite=()=>{if(started)return;started=true;clearTimeout(timer);verified(new URL(bundle.path+version,root).href,site.signal).then(resolve,reject);};
+        timer=setTimeout(startSite,1500);
+      });
+      const mirror=verified('https://cdn.jsdelivr.net/gh/HawZZ/ble-codec-demo@'+bundle.revision+'/'+bundle.path,cdn.signal).catch(error=>{startSite();throw error;});
+      try{compressed=await Promise.any([mirror,fallback]);}
+      finally{clearTimeout(timer);cdn.abort();site.abort();}
     }else compressed=await verified(new URL(bundle.path+version,root).href);
     const bytes=await gunzip(compressed),view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
     const len=view.getUint32(0),index=JSON.parse(new TextDecoder().decode(bytes.subarray(4,4+len)));let offset=4+len;

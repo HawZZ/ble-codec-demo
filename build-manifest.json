@@ -1,5 +1,5 @@
 {
-  "buildId": "363720f981ec6262",
+  "buildId": "7916849b585aa1ae",
   "pyodide": "0.28.3",
   "packages": {
     "attrs": "25.2.0",
@@ -25,8 +25,8 @@
       "sha256": "78b12c3a81360b357002334f0e70ea0e92eebf7a9b358805c03c48484945f3bb"
     },
     "README.md": {
-      "bytes": 4493,
-      "sha256": "2374ce601a8fea969b056a9231d3a1901ea3027c713de2b3733eebdc5d8a941f"
+      "bytes": 4583,
+      "sha256": "dd7f2a8708fac110e0e6aa78999f8f4ceb9c0a42964ee8b9b80e5ae55cfaf873"
     },
     "app.css": {
       "bytes": 64616,
@@ -41,8 +41,8 @@
       "sha256": "abc5889b9a43644af3ea42b2ce2394c19e04f1b99d7045c7450cc60200138185"
     },
     "codec-worker.js": {
-      "bytes": 9595,
-      "sha256": "82c6f9fbd9099580ba1c153469381c570f4b67f941f0ce1cb7a8f759bab395e8"
+      "bytes": 10303,
+      "sha256": "a4428d2cc375f5eb842795b305ac0bd25c0a6afed5ac411427b66e9c262ab95f"
     },
     "configuration-editor.js": {
       "bytes": 36970,
@@ -58,7 +58,7 @@
     },
     "index.html": {
       "bytes": 41810,
-      "sha256": "0318648907c1d05e294f51772f306a0aaf9ea582bdf6b5fa0214b0da0eeb256f"
+      "sha256": "12bd87e4d0a15a2e171e454b6a6fbc2424a30ee66012dd077791a8b149e1f0fa"
     },
     "runtime-files.json": {
       "bytes": 516786,
