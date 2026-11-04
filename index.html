@@ -6,9 +6,10 @@
   <meta name="color-scheme" content="light">
   <meta name="description" content="BLE 应用层 PDU 离线编解码实验台。">
   <title>BLE 编解码实验台</title>
-  <link rel="stylesheet" href="./app.css?v=9c5cdcad6becb126">
-  <script src="./browser-runtime.js?v=9c5cdcad6becb126" defer></script>
-  <script src="./app.js?v=9c5cdcad6becb126" defer></script>
+  <link rel="stylesheet" href="./app.css?v=7d53916a121b42c7">
+  <script src="./configuration-editor.js?v=7d53916a121b42c7" defer></script>
+  <script src="./browser-runtime.js?v=7d53916a121b42c7" defer></script>
+  <script src="./app.js?v=7d53916a121b42c7" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">跳到主要内容</a>
@@ -37,8 +38,7 @@
         <span class="button-icon" aria-hidden="true">＋</span>导入 / 示例
       </button>
       <button class="button button-quiet" id="saveDraftBtn" type="button">保存草稿</button>
-      <button class="button button-quiet" id="exportDictionaryBtn" type="button" disabled>导出内部快照</button>
-      <button class="button button-quiet" id="exportWorkspaceBtn" type="button">备份工作区</button>
+      <details class="advanced-export"><summary class="button button-quiet">高级导出</summary><div><button class="button button-quiet" id="exportDictionaryBtn" type="button" disabled>导出内部快照</button><button class="button button-quiet" id="exportWorkspaceBtn" type="button">备份工作区</button></div></details>
       <button class="button button-accent" id="exportPairBtn" type="button" disabled>导出模型与映射</button>
     </div>
   </header>
@@ -126,8 +126,8 @@
         <div class="section-heading">
           <div>
             <p class="eyebrow">THING MODEL</p>
-            <h2>物模型结构</h2>
-            <p>逐层配置服务输入／输出、属性和事件；下方 JSON 编辑器可补足复杂结构。</p>
+            <h2>物模型</h2>
+            <p>按属性、事件和服务维护业务功能；结构树和 JSON 用于查看或编辑复杂参数。</p>
           </div>
           <div class="section-actions">
             <span class="mini-stat" id="modelSummary">0 个方法</span>
@@ -142,8 +142,25 @@
           <p><strong>属性、服务、事件都可直接参与映射。</strong> 属性指定read／write／report，服务绑定input／output，事件绑定上行数据；无需为属性另外创建服务。</p>
         </div>
 
+        <div class="editor-view-tabs" role="tablist" aria-label="物模型视图">
+          <button class="table-tab is-active" id="modelViewTable" role="tab" aria-selected="true" aria-controls="modelTablePanel" data-model-view="table" type="button">表格</button>
+          <button class="table-tab" id="modelViewTree" role="tab" aria-selected="false" aria-controls="modelTreePanel" data-model-view="tree" type="button" tabindex="-1">结构树</button>
+          <button class="table-tab" id="modelViewJson" role="tab" aria-selected="false" aria-controls="modelJsonPanel" data-model-view="json" type="button" tabindex="-1">JSON</button>
+        </div>
+        <article class="panel" id="modelTablePanel" role="tabpanel" aria-labelledby="modelViewTable">
+          <div class="table-tabs" role="tablist" aria-label="物模型功能分类">
+            <button class="table-tab is-active" id="modelCategoryProperties" role="tab" aria-selected="true" aria-controls="modelFeatureContent" data-model-category="properties" type="button">属性 <span id="propertyTableCount">0</span></button>
+            <button class="table-tab" id="modelCategoryEvents" role="tab" aria-selected="false" aria-controls="modelFeatureContent" data-model-category="events" type="button" tabindex="-1">事件 <span id="eventTableCount">0</span></button>
+            <button class="table-tab" id="modelCategoryMethods" role="tab" aria-selected="false" aria-controls="modelFeatureContent" data-model-category="methods" type="button" tabindex="-1">服务（方法） <span id="serviceTableCount">0</span></button>
+          </div>
+          <div id="modelFeatureContent" role="tabpanel" aria-labelledby="modelCategoryProperties">
+            <div class="feature-toolbar"><p id="modelCategoryDescription"></p><button class="button button-small button-outline" id="addFeatureBtn" type="button">新增属性</button></div>
+            <div class="table-scroll"><table class="feature-table" id="modelFeatureTable"><thead id="modelFeatureHead"></thead><tbody id="modelFeatureBody"></tbody></table></div>
+            <div class="table-empty" id="modelFeatureEmpty" hidden>当前分类还没有功能，请点击新增。</div>
+          </div>
+        </article>
         <div class="model-layout">
-          <article class="panel model-tree-panel">
+          <article class="panel model-tree-panel" id="modelTreePanel" role="tabpanel" aria-labelledby="modelViewTree" hidden>
             <div class="panel-head">
               <div>
                 <h3>结构树</h3>
@@ -158,7 +175,7 @@
             <div class="model-tree" id="modelTree" role="tree" aria-label="物模型结构树"></div>
           </article>
 
-          <article class="panel model-json-panel">
+          <article class="panel model-json-panel" id="modelJsonPanel" role="tabpanel" aria-labelledby="modelViewJson" hidden>
             <div class="panel-head">
               <div>
                 <h3>模型 JSON</h3>
@@ -184,7 +201,7 @@
           <div>
             <p class="eyebrow">MAPPING TABLES</p>
             <h2>指令与字段映射</h2>
-            <p>三表保持字符串列。修改后自动失效旧编译结果，并重新校验当前工作区。</p>
+            <p>选择物模型功能，配置原指令地址和字段编码；系统维护内部标识及版本。</p>
           </div>
           <div class="section-actions">
             <button class="button button-small button-outline" id="addTableRowBtn" type="button">＋ 新增行</button>
@@ -199,9 +216,14 @@
             <button class="table-tab" type="button" role="tab" aria-selected="false" data-table-tab="bindings">
               字段绑定 <span id="bindingsCount">0</span>
             </button>
-            <button class="table-tab" type="button" role="tab" aria-selected="false" data-table-tab="groups">
-              约束组 <span id="groupsCount">0</span>
-            </button>
+
+          </div>
+          <div class="mapping-context" id="mappingContext" hidden>
+            <label class="form-control"><span>当前指令</span><select class="select" id="mappingOperation"></select></label>
+            <div class="editor-view-tabs" role="tablist" aria-label="绑定方向">
+              <button class="table-tab is-active" type="button" role="tab" aria-selected="true" data-binding-role="request">下行请求</button>
+              <button class="table-tab" type="button" role="tab" aria-selected="false" tabindex="-1" data-binding-role="incoming">上行数据</button>
+            </div>
           </div>
           <div class="table-intro">
             <div>
@@ -225,6 +247,7 @@
             <button class="button button-small button-primary" id="emptyAddRowBtn" type="button">新增第一行</button>
           </div>
           <p class="table-hint" id="tableHint"></p>
+          <details class="mapping-advanced"><summary>高级配置与组合约束</summary><p>上行属性更新、成功码及来源在指令详情中维护；嵌套容器和数值换算在字段详情中维护。</p><button class="button button-small button-outline" type="button" id="openGroupsBtn">管理组合约束 <span id="groupsCount">0</span></button></details>
         </article>
       </section>
     </section>
@@ -560,6 +583,13 @@
     <div class="modal-foot"><p>日常接入只需要这两个文件。</p><button class="button button-primary" id="doneExportPairBtn" type="button">完成</button></div>
   </dialog>
 
+  <dialog class="modal node-modal" id="mappingDialog" aria-labelledby="mappingDialogTitle">
+    <form id="mappingForm" novalidate>
+      <div class="modal-head"><div><h2 id="mappingDialogTitle">配置映射</h2><p id="mappingDialogSubtitle"></p></div><button class="modal-close" type="button" id="closeMappingBtn" aria-label="关闭映射编辑">×</button></div>
+      <div class="modal-body"><div id="mappingFields"></div><div class="editor-message is-error" id="mappingFormError" role="alert" hidden></div></div>
+      <div class="modal-foot"><p>高级信息与现有字节定义一起保存。</p><div><button class="button button-ghost" type="button" id="cancelMappingBtn">取消</button><button class="button button-primary" type="submit">保存</button></div></div>
+    </form>
+  </dialog>
   <dialog class="modal node-modal" id="nodeDialog" aria-labelledby="nodeDialogTitle">
     <form id="nodeForm" method="dialog" novalidate>
       <div class="modal-head">
@@ -584,10 +614,7 @@
             <small>用于表单标签，可留空。</small>
           </label>
         </div>
-        <label class="form-control">
-          <span>说明</span>
-          <textarea class="input textarea-small" id="nodeDescription" rows="2"></textarea>
-        </label>
+        <details class="node-description"><summary>补充说明（可选）</summary><label class="form-control"><span>说明</span><textarea class="input textarea-small" id="nodeDescription" rows="2"></textarea></label></details>
 
         <div class="node-schema-fields" id="nodeSchemaFields">
           <div class="node-select-row">
@@ -647,7 +674,7 @@
 
         <div class="node-warning" id="nodeWarning">
           <span aria-hidden="true">!</span>
-          <p>模型结构修改不会自动改写 bindings.csv 的 model_path。改名或移动节点后，请在三表中同步调整。</p>
+          <p>修改标识符会同步更新明确关联的映射；仍被引用的节点不能删除。直接编辑 JSON 后会重新校验全部引用。</p>
         </div>
         <div class="form-error" id="nodeFormError" role="alert" hidden></div>
       </div>

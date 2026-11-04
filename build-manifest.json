@@ -1,5 +1,5 @@
 {
-  "buildId": "9c5cdcad6becb126",
+  "buildId": "7d53916a121b42c7",
   "pyodide": "0.28.3",
   "packages": {
     "attrs": "25.2.0",
@@ -25,16 +25,16 @@
       "sha256": "78b12c3a81360b357002334f0e70ea0e92eebf7a9b358805c03c48484945f3bb"
     },
     "README.md": {
-      "bytes": 2459,
-      "sha256": "b4dbef61ece40a85c67dd3376a41f4b400c237e7b4e09c54053c762e7739a7ce"
+      "bytes": 2788,
+      "sha256": "0760549c48f47971bfc86d9ac9b518de622584789430eb12fbcf4867decdfe45"
     },
     "app.css": {
-      "bytes": 59475,
-      "sha256": "c85f9343df48e893cdaae349ed75a25e3c2632a338d7a93376108a0975abd189"
+      "bytes": 63355,
+      "sha256": "9cdb847197f65ea060fd2994c870221107b6a6b426faa7024a1ab009d5d50751"
     },
     "app.js": {
-      "bytes": 102593,
-      "sha256": "f15ad5413037d5a0d2d65731505bae2878f88ebb9e761890b64203f9c09b959c"
+      "bytes": 104147,
+      "sha256": "1a3c1449008d542ada9ebf9bf2cca02aa42c04cebf6ea1e01fe5b0ef698d4c58"
     },
     "browser-runtime.js": {
       "bytes": 1789,
@@ -44,9 +44,13 @@
       "bytes": 4958,
       "sha256": "2c8f4152ce818dbc2c618b5b6c2be7eec016d9ad936394cafd5af4e049a7cafb"
     },
+    "configuration-editor.js": {
+      "bytes": 36633,
+      "sha256": "34f3867d514a82057e85048fa94b3d8a052e11be77694c6d07aa2f4febc67822"
+    },
     "index.html": {
-      "bytes": 35384,
-      "sha256": "2aa07abf1b07b4caa44c12c3bd263b9d1eab13db18a9f5047c820547e987b9f8"
+      "bytes": 39611,
+      "sha256": "5de43da7a7875a385106c11985bfda0eeb361be74619e650633b4f4991a806ab"
     },
     "runtime-files.json": {
       "bytes": 490810,
@@ -77,8 +81,8 @@
       "sha256": "82ce5c79537a13369ba07214ccbf65cf95f0c5bec28e0b56183b9eb054797702"
     },
     "two-file-contract.md": {
-      "bytes": 16476,
-      "sha256": "d9ac1e91d77ebbc20487571676e830589f9e04ae0fdee285cda45f0e8ad76442"
+      "bytes": 17637,
+      "sha256": "ad9e153f9cd1ac461423eef5df6196214454696128e40a3c489d2415168e69e3"
     },
     "vendor/pyodide/attrs-25.2.0-py3-none-any.whl": {
       "bytes": 64016,

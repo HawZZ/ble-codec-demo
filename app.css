@@ -945,7 +945,7 @@ button:disabled {
 
 .model-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.32fr) minmax(340px, 0.82fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
 }
 
@@ -3418,3 +3418,52 @@ button:disabled {
   font-size: 8px;
   font-weight: 400;
 }
+
+/* Compact maintenance views reuse the existing workbench tokens. */
+.editor-view-tabs { display:flex; gap:4px; margin:0 0 12px; border-bottom:1px solid var(--line); }
+.feature-toolbar { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 18px; }
+.feature-toolbar p { margin:0; color:var(--muted); font-size:12px; }
+.feature-table { width:100%; min-width:760px; border-collapse:collapse; font-size:12px; }
+.feature-table th { padding:12px 16px; text-align:left; color:var(--muted); background:#f2f1eb; font-size:11px; white-space:nowrap; }
+.feature-table td { padding:14px 16px; border-top:1px solid var(--line); vertical-align:middle; max-width:280px; overflow-wrap:anywhere; }
+.feature-table th:last-child,.feature-table td:last-child { white-space:nowrap; }
+.feature-table tbody tr:hover { background:#fafbf8; }
+.feature-table code { font-size:11px; }
+.definition-link { background:none; border:0; padding:0; color:var(--accent,#16796c); text-align:left; font:inherit; cursor:pointer; }
+.definition-link:hover { text-decoration:underline; }
+.definition-link:focus-visible,.table-tab:focus-visible { outline:2px solid #16796c; outline-offset:4px; }
+.muted,.readonly-note { color:var(--muted); }
+.mapping-context { padding:16px 18px; display:flex; align-items:end; gap:24px; background:#f7f7f2; }
+.mapping-context > label { min-width:260px; max-width:620px; flex:1; }
+.mapping-context .editor-view-tabs { margin:0; }
+.mapping-actions { white-space:nowrap; }
+.cell-detail { display:block; font-size:10px; color:var(--muted); margin-top:4px; overflow-wrap:anywhere; }
+.status-label { margin-left:8px; font-size:10px; color:#945c1e; }
+#workspaceTable { min-width:700px; table-layout:auto; }
+#workspaceTable th { padding:12px 16px; font-size:11px; }
+#workspaceTable td { padding:12px 16px; font-size:12px; }
+#workspaceTable td:first-child { min-width:170px; }
+.mapping-advanced { padding:14px 18px; border-top:1px solid var(--line); font-size:12px; }
+.mapping-advanced p { color:var(--muted); }
+.editor-advanced,.node-description { padding:12px 0; border-top:1px solid var(--line); }
+.editor-advanced summary,.node-description summary,.mapping-advanced summary { cursor:pointer; font-weight:600; }
+.editor-advanced[open] summary,.node-description[open] summary { margin-bottom:16px; }
+.editor-advanced h3 { margin-top:20px; font-size:13px; }
+.editor-advanced p,.readonly-note { font-size:12px; line-height:1.7; }
+.form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.reply-choices { display:flex; flex-wrap:wrap; gap:18px; border:1px solid var(--line); border-radius:8px; margin:18px 0; padding:14px; font-size:12px; }
+.reply-choices legend { padding:0 6px; }
+.reply-choices label { display:flex; align-items:center; gap:6px; }
+.projection-row { display:grid; grid-template-columns:1fr 1fr auto; gap:10px; align-items:end; margin:12px 0; }
+#mappingFields { display:grid; gap:14px; }
+#mappingFormError { margin-top:16px; color:#a5233d; }
+.advanced-export { position:relative; }
+.advanced-export > summary { list-style:none; }
+.advanced-export[open] > div { position:absolute; top:100%; right:0; z-index:20; display:grid; min-width:160px; padding:8px; background:var(--paper,#fff); border:1px solid var(--line); box-shadow:0 6px 22px #0001; }
+@media(max-width:840px) { .feature-toolbar,.mapping-context { flex-wrap:wrap; } .mapping-context>label { min-width:220px; } }
+@media(max-width:620px) { .form-grid { grid-template-columns:1fr; } .projection-row { grid-template-columns:1fr; } .mapping-context { gap:12px; } }
+.model-layout { grid-template-columns:minmax(0,1fr); }
+.editor-view-tabs > .table-tab { padding:10px 18px; }
+.definition-link { color:var(--teal); }
+.advanced-export[open] > div .button { color:var(--ink); }
+.tree-row.is-reference-target { background:var(--teal-wash); outline:1px solid var(--teal); outline-offset:-1px; }

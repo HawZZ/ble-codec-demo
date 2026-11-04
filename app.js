@@ -67,6 +67,8 @@
     transport_ref: '传输引用'
   };
 
+  let configUI = null;
+
   const state = {
     bootstrap: {
       examples: [],
@@ -226,6 +228,7 @@
     const toast = document.createElement('div');
     toast.className = `toast${type === 'error' ? ' is-error' : type === 'warning' ? ' is-warning' : ''}`;
     toast.textContent = message;
+    while (region.children.length >= 2) region.firstElementChild.remove();
     region.append(toast);
     window.setTimeout(() => {
       toast.style.opacity = '0';
@@ -898,6 +901,7 @@
   function renderModelEditor() {
     state.modelNodes = buildModelNodes();
     renderModelTree();
+    configUI?.renderModel();
     if (!state.modelJsonDirty) syncModelJsonText();
   }
 
@@ -982,23 +986,26 @@
     return proceed;
   }
 
-  function applyModelJson() {
+  async function applyModelJson() {
+    const text = $('modelJson').value;
+    const revision = state.revision;
+    $('applyModelJsonBtn').disabled = true;
     try {
-      const parsed = JSON.parse($('modelJson').value);
-      if (Object.hasOwn(parsed, 'services') && Object.hasOwn(parsed, 'methods')) throw new Error('services与旧methods不能同时声明');
-      if (Object.hasOwn(parsed, 'services')) { parsed.methods = parsed.services; delete parsed.services; }
-      if (!isObject(parsed) || !isObject(parsed.properties) || !isObject(parsed.methods) || !isObject(parsed.events)) {
-        throw new Error('模型必须包含 properties、services、events 三个对象');
-      }
-      state.workspace.model_metadata = Object.fromEntries(Object.entries(parsed).filter(([key]) => !['properties', 'methods', 'events'].includes(key)));
-      state.workspace.model = {properties: parsed.properties, methods: parsed.methods, events: parsed.events};
+      const imported = await postJson(API.import, {kind: 'model', text, workspace: workspaceSnapshot()});
+      const candidate = imported.workspace;
+      if (candidate.commands.length) await postJson(API.compile, {workspace: candidate});
+      if (revision !== state.revision || text !== $('modelJson').value) throw new Error('校验期间内容已变化，请重新应用');
+      state.workspace = normalizeWorkspace(candidate);
       state.modelJsonDirty = false;
       markWorkspaceEdited();
       renderModelEditor();
-      setModelJsonMessage('已应用 JSON，正在重新编译当前工作区。', true);
+      renderTable();
+      setModelJsonMessage('JSON及映射引用校验通过，已应用。', true);
       showToast('模型 JSON 已应用。');
     } catch (error) {
-      setModelJsonMessage(`JSON 未应用：${error.message}`);
+      setModelJsonMessage(`JSON 未应用：${error.message}。当前有效模型保持原样。`);
+    } finally {
+      $('applyModelJsonBtn').disabled = false;
     }
   }
 
@@ -1024,8 +1031,8 @@
     $('nodeDialogEyebrow').textContent = schemaMode ? 'MODEL NODE' : 'METHOD';
     $('nodeDialogTitle').textContent = schemaMode ? (editor.intent === 'create' ? '添加模型节点' : '配置模型节点') : (editor.intent === 'create' ? '添加物模型服务' : '编辑物模型服务');
     $('nodeDialogSubtitle').textContent = schemaMode
-      ? '只修改物模型 schema；已存在的字段映射路径不会被自动改写。'
-      : '方法改名不会自动改写 commands.method，请同步检查指令表。';
+      ? '维护业务定义；修改标识符会同步更新明确关联的BLE映射。'
+      : '修改服务标识符会保留输入／输出，并同步更新指令引用。';
     $('nodeMode').value = editor.mode;
     $('nodeNameLabel').textContent = schemaMode ? '字段键名' : '方法键名';
     $('nodeKey').value = editor.intent === 'create' ? '' : editor.oldKey || '';
@@ -1071,9 +1078,16 @@
     $('arrayItemTypeWrap').hidden = type !== 'array';
     $('requiredFieldWrap').hidden = !editor.parentSchema;
     $('nodeConstraintFields').hidden = type === 'object';
-    $('nodeConstraintFields').querySelectorAll('input').forEach((input) => {
-      input.disabled = type === 'object';
-    });
+    const applicable = {
+      nodeMinimum: ['integer','number'], nodeMaximum: ['integer','number'],
+      nodeMultipleOf: ['integer','number'], nodeMinLength: ['string'], nodeMaxLength: ['string'],
+      nodeMinItems: ['array'], nodeMaxItems: ['array'], nodeEnum: ['integer','number','boolean','string']
+    };
+    for (const [id, types] of Object.entries(applicable)) {
+      const control = $(id);
+      control.closest('label').hidden = !types.includes(type);
+      control.disabled = !types.includes(type);
+    }
   }
 
   function openCreateRoot(category) {
@@ -1131,7 +1145,8 @@
       arrayOwner: node.kind === 'array-item' ? node.arrayOwner : null,
       arrayItemRoot: node.kind === 'array-item',
       virtualRoot: node.kind === 'virtual-schema',
-      ownerMethodName: node.ownerMethodName
+      ownerMethodName: node.ownerMethodName,
+      referencePath: node.pathLabel
     });
   }
 
@@ -1143,7 +1158,7 @@
   function openEditMethod(id) {
     const node = nodeById(id);
     if (!node || node.kind !== 'method' || !guardJsonDraft()) return;
-    openNodeDialog({ mode: 'method', intent: 'edit', method: node.method, oldKey: node.name, nameEditable: true });
+    openNodeDialog({ mode: 'method', intent: 'edit', method: node.method, oldKey: node.name, nameEditable: true, referencePath: node.pathLabel, kind: 'method' });
   }
 
   function parseOptionalNumber(value, integer = false) {
@@ -1207,13 +1222,13 @@
     if (title) next.title = title; else delete next.title;
     if (description) next.description = description; else delete next.description;
 
-    const minimum = parseOptionalNumber($('nodeMinimum').value);
-    const maximum = parseOptionalNumber($('nodeMaximum').value);
-    const minLength = parseOptionalNumber($('nodeMinLength').value, true);
-    const maxLength = parseOptionalNumber($('nodeMaxLength').value, true);
-    const minItems = parseOptionalNumber($('nodeMinItems').value, true);
-    const maxItems = parseOptionalNumber($('nodeMaxItems').value, true);
-    const multipleOf = parseOptionalNumber($('nodeMultipleOf').value);
+    const minimum = parseOptionalNumber($('nodeMinimum').disabled ? '' : $('nodeMinimum').value);
+    const maximum = parseOptionalNumber($('nodeMaximum').disabled ? '' : $('nodeMaximum').value);
+    const minLength = parseOptionalNumber($('nodeMinLength').disabled ? '' : $('nodeMinLength').value, true);
+    const maxLength = parseOptionalNumber($('nodeMaxLength').disabled ? '' : $('nodeMaxLength').value, true);
+    const minItems = parseOptionalNumber($('nodeMinItems').disabled ? '' : $('nodeMinItems').value, true);
+    const maxItems = parseOptionalNumber($('nodeMaxItems').disabled ? '' : $('nodeMaxItems').value, true);
+    const multipleOf = parseOptionalNumber($('nodeMultipleOf').disabled ? '' : $('nodeMultipleOf').value);
     if ((minLength != null && minLength < 0) || (maxLength != null && maxLength < 0) || (minItems != null && minItems < 0) || (maxItems != null && maxItems < 0)) {
       throw new Error('长度与项数不能为负数');
     }
@@ -1231,7 +1246,7 @@
       if (value == null) delete next[key];
       else next[key] = value;
     }
-    const enumValues = parseEnumLines($('nodeEnum').value);
+    const enumValues = parseEnumLines($('nodeEnum').disabled ? '' : $('nodeEnum').value);
     if (enumValues) next.enum = enumValues; else delete next.enum;
 
     if (type === 'array') {
@@ -1285,6 +1300,7 @@
       if (!shouldBeRequired && newIndex >= 0) required.splice(newIndex, 1);
       editor.parentSchema.additionalProperties = false;
     }
+    configUI?.rename(editor, name);
     markWorkspaceEdited();
   }
 
@@ -1295,13 +1311,15 @@
     if (editor.intent === 'create' || editor.oldKey !== name) {
       if (Object.hasOwn(methods, name)) throw new Error(`方法 ${name} 已存在`);
       if (editor.intent === 'edit') delete methods[editor.oldKey];
-      methods[name] = { name: title, input: closedObjectSchema(), output: closedObjectSchema() };
-      if (description) methods[name].description = description;
+      methods[name] = editor.intent === 'edit' ? clone(editor.method) : { input: closedObjectSchema(), output: closedObjectSchema() };
+      methods[name].name = title;
+      if (description) methods[name].description = description; else delete methods[name].description;
     } else {
       const method = methods[editor.oldKey];
       method.name = title;
       if (description) method.description = description; else delete method.description;
     }
+    configUI?.rename(editor, name);
     markWorkspaceEdited();
   }
 
@@ -1317,6 +1335,7 @@
       else if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
         throw new Error('键名必须以字母或下划线开头，只能包含字母、数字和下划线');
       }
+      configUI?.validateRename(editor, name);
       if (editor.mode === 'method') saveMethod(editor, name);
       else saveSchemaNode(editor, name);
       if (editor.mode === 'schema' && !editor.arrayItemRoot && !editor.virtualRoot && editor.intent === 'create' && editor.parentSchema && $('nodeRequired').checked) {
@@ -1327,6 +1346,7 @@
       state.modelJsonDirty = false;
       $('nodeDialog').close();
       renderModelEditor();
+      renderTable();
       showToast('模型结构已更新，正在重新编译。');
     } catch (error) {
       errorBox.textContent = error.message || '节点保存失败';
@@ -1337,8 +1357,13 @@
   function deleteNodeById(id) {
     const node = nodeById(id);
     if (!node || !node.deletable || !guardJsonDraft()) return;
-    const label = `${node.category}.${node.name}`;
-    if (!window.confirm(`删除模型节点 ${label}？字段映射不会自动删除，之后可能需要同步调整 bindings.csv。`)) return;
+    const refs = configUI?.references(node) || [];
+    if (refs.length) {
+      showWorkspaceError({code: 'MODEL_IN_USE', message: `不能删除 ${node.pathLabel}，仍被引用：${refs.join('；')}。请先处理相关映射。`});
+      return;
+    }
+    const label = node.pathLabel;
+    if (!window.confirm(`删除模型节点 ${label}？`)) return;
     if (node.kind === 'method') {
       delete state.workspace.model.methods[node.name];
     } else if (!node.parentSchema && node.category) {
@@ -1351,10 +1376,12 @@
     }
     markWorkspaceEdited();
     renderModelEditor();
-    showToast('节点已删除，字段映射未自动修改。', 'warning');
+    renderTable();
+    showToast('未被引用的节点已删除。');
   }
 
   function renderTable() {
+    if (configUI) { configUI.renderMappings(); return; }
     const tableName = state.activeTable;
     const columns = state.columns[tableName] || FALLBACK_COLUMNS[tableName];
     const rows = state.workspace[tableName] || [];
@@ -1402,6 +1429,7 @@
   }
 
   function addTableRow() {
+    if (configUI) { configUI.addRow(); return; }
     const row = newRowForTable(state.activeTable);
     state.workspace[state.activeTable].push(row);
     markWorkspaceEdited();
@@ -2469,6 +2497,7 @@
 
   function init() {
     state.draft = readStoredDraft();
+    configUI = window.BleConfigUI.create({state, $, showToast, guardJsonDraft, markWorkspaceEdited, renderModelEditor, renderTable, nodeById, openCreateRoot, openCreateMethod, openEditNode, openEditMethod, openAddChild, deleteNodeById, bindDialogBackdrop, typeLabel, schemaConstraintText});
     bindEvents();
     renderAll();
     loadBootstrap();
