@@ -10,11 +10,11 @@
 
 上传或逐行维护指令字典、配置物模型，选择上行／下行，完成 HEX 与物模型 JSON 的双向转换。支持嵌套对象、对象数组、倍率、约束及 1～2B TLV Length。
 
-所有编译和转换都在浏览器的 Web Worker 中执行，复用项目原 Python 引擎。上传内容不发往后端；草稿仅在点击保存后保存在当前浏览器。首次访问通过固定版本jsDelivr镜像并行下载公开引擎资源，1.2秒后启用本站备用下载；逐文件验证打包SHA-256，校验失败不执行。公开静态资源按内容哈希缓存至当前浏览器，模型／字典不发往镜像。runtime-files.json使用gzip下载并校验，解压失败回退原文件。下载持续有进展时不受固定总时限中断；单资源连续20秒无数据会重试一次。居中面板显示进度，引擎完成bootstrap之前禁止操作；引擎连续90秒无加载进展时停止等待，业务处理另有300秒上限。没有蓝牙发送、设备执行或云端平台能力。
+所有编译和转换都在浏览器的 Web Worker 中执行，复用项目原 Python 引擎。上传内容不发往后端；草稿仅在点击保存后保存在当前浏览器。首次访问下载一个固定Git提交的jsDelivr公开压缩引擎包（约5.8MB），镜像失败后启用本站相同字节的备用包；逐文件验证打包SHA-256，校验失败不执行。公开静态资源按内容哈希缓存至当前浏览器，模型／字典不发往镜像。runtime-files.json使用gzip下载并校验，解压失败回退原文件。下载持续有进展时不受固定总时限中断；单资源连续60秒无数据会重试一次。居中面板显示进度，引擎完成bootstrap之前禁止操作；引擎连续90秒无加载进展时停止等待，业务处理另有300秒上限。没有蓝牙发送、设备执行或云端平台能力。
 
 站点可直接部署 GitHub Pages，也可用 `python3 -m http.server 8791` 启动静态预览。不需要本机 Python API 服务。支持 WebAssembly 和 Web Worker 的现代浏览器；加载失败时显示具体资源和阶段；点击“重新加载引擎”在当前页面重试，保留工作区及输入。
 
-`runtime-files.json` 包含共享引擎、Schema 和预置样例；`build-manifest.json` 记录发布文件哈希。Pyodide固定0.28.3，公开资源优先使用jsDelivr，保留本站相同字节的完整回退；engine-assets.json记录资源大小和SHA-256。打包时仅移除原服务的 HTTP 适配器，不重写应用编解码逻辑。
+`runtime-files.json` 包含共享引擎、Schema 和预置样例；`build-manifest.json` 记录发布文件哈希。Pyodide固定0.28.3，公开压缩包优先使用jsDelivr，保留本站相同字节的完整回退；engine-assets.json记录资源大小和SHA-256。打包时仅移除原服务的 HTTP 适配器，不重写应用编解码逻辑。
 
 第三方运行时：Pyodide（见 `PYODIDE-LICENSE`）与 CPython（见 `PYTHON-LICENSE`）；Python 依赖及版本见 `build-manifest.json`，原许可证保留在各 wheel 的 dist-info 中。
 
@@ -28,3 +28,5 @@
 平台类型已支持：物模型选择object、array、Int32、Float、Double、Enum、Bool、String；系统保存platformType与对应JSON值形态，BLE wireType单独选择。导入导出保留Float／Double区别和能力声明；旧文件不猜平台类型。预置“平台类型 · 八种类型”含Int32/u8、整数倍率、数组与嵌套。范围、枚举、步长和精确逆换算继续校验；Float检查溢出及非零值下溢为0。输出显示工程值，不模拟数据库存储舍入。
 
 整数Enum可使用u8等整数编码；Int32／Float／Double属于number数值范畴但保留各自平台类型与约束。Bool可使用bool或u8／u16／u32／i8／i16／i32，严格false=0、true=1，不接受其他整数，不使用倍率偏移；系统自动声明boolean-integer/1能力。
+
+engine-mirror.json固定已发布公开引擎包的Git提交和SHA；打包器逐文件保留Pyodide原字节，gzip包及内部每个文件均校验SHA后执行。更换Pyodide资源时先发布新包，再更新固定引用；业务字典更新不需更换公开引擎包。

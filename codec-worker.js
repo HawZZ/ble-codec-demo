@@ -7,60 +7,65 @@ async function initialize() {
   const nativeFetch = self.fetch.bind(self), nativeImport = self.importScripts.bind(self);
   const root = new URL('./', self.location.href), vendorRoot = new URL('./vendor/pyodide/', root).href;
   const version = self.location.search;
-  const progress = (message, percent) => self.postMessage({type:'progress',message,percent});
   const metadata = await nativeFetch(new URL('engine-assets.json'+version,root));
   if (!metadata.ok) throw new Error('引擎清单加载失败');
-  const assets = await metadata.json(), memory = new Map();
-  const total = Object.values(assets).reduce((n,a)=>n+a.bytes,0), loaded = new Map();
+  const manifest=await metadata.json(),assets=manifest.assets,memory=new Map();
+  const progress=(message,percent)=>self.postMessage({type:'progress',message,percent});
   let cache;
-  try { cache = await caches.open('ble-public-engine-sha256-v1'); } catch (_) {}
-  const digest = async bytes => [...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(n=>n.toString(16).padStart(2,'0')).join('');
-  let last=0, high=0;
-  function update(name,bytes) {
-    loaded.set(name,Math.max(loaded.get(name)||0,bytes));
-    high=Math.max(high,Math.min(85,Math.floor([...loaded.values()].reduce((a,b)=>a+b,0)/total*85)));
-    if(Date.now()-last>150) {progress('正在下载并校验引擎资源',high);last=Date.now();}
+  try{cache=await caches.open('ble-public-engine-sha256-v1');}catch(_){}
+  const digest=async bytes=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(n=>n.toString(16).padStart(2,'0')).join('');
+  const keyFor=info=>new URL('__public_engine__/'+info.sha256,root).href;
+  const put=async(name,bytes)=>{memory.set(new URL(name,root).href,bytes);if(cache)await cache.put(keyFor(assets[name]),new Response(bytes)).catch(()=>{});};
+  await Promise.all(Object.entries(assets).map(async([name,info])=>{
+    if(!cache)return;
+    try{const hit=await cache.match(keyFor(info));if(!hit)return;const bytes=new Uint8Array(await hit.arrayBuffer());if(await digest(bytes)===info.sha256)memory.set(new URL(name,root).href,bytes);else await cache.delete(keyFor(info));}catch(_){}
+  }));
+  const have=name=>memory.has(new URL(name,root).href);
+  let vendorDone=Object.keys(assets).filter(n=>n.startsWith('vendor/')).every(have),runtimeDone=have('runtime-files.json');
+  const received={vendor:vendorDone?manifest.bundle.bytes:0,runtime:runtimeDone?53000:0};
+  let high=2,last=0;
+  function update(kind,bytes){received[kind]=Math.max(received[kind],bytes);high=Math.max(high,Math.min(85,Math.floor((received.vendor+received.runtime)/(manifest.bundle.bytes+53000)*85)));if(Date.now()-last>150){progress('正在下载并校验引擎资源',high);last=Date.now();}}
+  async function transfer(url,kind){
+    let error;
+    for(let attempt=0;attempt<2;attempt++){
+      const c=new AbortController();let timer,reader;
+      const touch=()=>{clearTimeout(timer);timer=setTimeout(()=>c.abort(),60000);};
+      try{touch();const response=await nativeFetch(url,{signal:c.signal});if(!response.ok||!response.body)throw new Error('HTTP '+response.status);
+        reader=response.body.getReader();const chunks=[];let size=0;
+        while(true){const {done,value}=await reader.read();if(done)break;touch();chunks.push(value);size+=value.length;update(kind,size);}
+        const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}return bytes;
+      }catch(e){error=e;}finally{clearTimeout(timer);if(c.signal.aborted&&reader)reader.cancel().catch(()=>{});}
+    }throw error;
   }
-  async function transfer(url, signal, name) {
-    const controller=new AbortController();
-    const abort=()=>controller.abort(); signal.addEventListener('abort',abort,{once:true});
-    let timer,reader;
-    const touch=()=>{clearTimeout(timer);timer=setTimeout(abort,20000);};
-    try {
-      touch();const response=await nativeFetch(url,{signal:controller.signal});
-      if(!response.ok||!response.body)throw new Error('HTTP '+response.status);
-      reader=response.body.getReader();const chunks=[];let size=0;
-      while(true){const {done,value}=await reader.read();if(done)break;touch();chunks.push(value);size+=value.length;update(name,size);}
-      const bytes=new Uint8Array(size);let offset=0;for(const b of chunks){bytes.set(b,offset);offset+=b.length;}return bytes;
-    } finally {clearTimeout(timer);signal.removeEventListener('abort',abort);if(controller.signal.aborted&&reader)reader.cancel().catch(()=>{});}
+  async function gunzip(bytes){return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());}
+  async function loadVendor(){
+    if(vendorDone)return;
+    if(typeof DecompressionStream==='undefined'){
+      const names=Object.keys(assets).filter(n=>n.startsWith('vendor/')&&!have(n));let next=0;
+      await Promise.all(Array.from({length:2},async()=>{while(next<names.length){const name=names[next++],info=assets[name];const bytes=await transfer(new URL(name+version,root).href,'vendor');if(bytes.length!==info.bytes||await digest(bytes)!==info.sha256)throw new Error('引擎文件校验失败');await put(name,bytes);}}));return;
+    }
+    const bundle=manifest.bundle;
+    let compressed;
+    const verified=async url=>{const bytes=await transfer(url,'vendor');if(bytes.length!==bundle.bytes||await digest(bytes)!==bundle.sha256)throw new Error('引擎包校验不匹配');return bytes;};
+    if(bundle.revision){
+      try{compressed=await verified('https://cdn.jsdelivr.net/gh/HawZZ/ble-codec-demo@'+bundle.revision+'/'+bundle.path);}
+      catch(_){compressed=await verified(new URL(bundle.path+version,root).href);}
+    }else compressed=await verified(new URL(bundle.path+version,root).href);
+    const bytes=await gunzip(compressed),view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+    const len=view.getUint32(0),index=JSON.parse(new TextDecoder().decode(bytes.subarray(4,4+len)));let offset=4+len;
+    const found=new Set();
+    for(const entry of index){const info=assets[entry.path];if(!info||!entry.path.startsWith('vendor/')||found.has(entry.path)||info.bytes!==entry.bytes)throw new Error('引擎包目录不匹配');found.add(entry.path);const file=bytes.slice(offset,offset+entry.bytes);offset+=entry.bytes;if(await digest(file)!==info.sha256)throw new Error('引擎文件校验不匹配');await put(entry.path,file);}
+    if(offset!==bytes.length||Object.keys(assets).filter(n=>n.startsWith('vendor/')).some(n=>!found.has(n)))throw new Error('引擎包不完整');
   }
-  async function obtain(name, info) {
-    const key=new URL('__public_engine__/'+info.sha256,root).href;
-    if(cache){const hit=await cache.match(key);if(hit){const bytes=new Uint8Array(await hit.arrayBuffer());if(await digest(bytes)===info.sha256){update(name,info.bytes);return bytes;}await cache.delete(key);}}
-    const controllers=[],timers=[];
-    const source=async(url,delay=0,gzip=false)=>{
-      const c=new AbortController();controllers.push(c);
-      if(delay)await new Promise((resolve,reject)=>{const t=setTimeout(resolve,delay);timers.push(t);c.signal.addEventListener('abort',()=>{clearTimeout(t);reject(new Error('Canceled'));},{once:true});});
-      let error;
-      for(let attempt=0;attempt<2;attempt++){
-        try {let bytes=await transfer(url,c.signal,name);
-          if(gzip)bytes=new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
-          if(bytes.length!==info.bytes||await digest(bytes)!==info.sha256)throw new Error('资源校验不匹配');return bytes;
-        }catch(e){error=e;if(c.signal.aborted)throw e;}
-      }throw error;
-    };
-    const local=new URL(name+version,root).href;
-    const candidates=name.startsWith('vendor/pyodide/')?
-      [source('https://cdn.jsdelivr.net/pyodide/v0.28.3/full/'+name.split('/').pop()),source(local,1200)]:
-      (typeof DecompressionStream!=='undefined'?[source(new URL(name+'.gz'+version,root).href,0,true),source(local,1200)]:[source(local)]);
-    try {
-      const bytes=await Promise.any(candidates);update(name,info.bytes);
-      if(cache)await cache.put(key,new Response(bytes)).catch(()=>{});return bytes;
-    }catch(e){throw new Error(name+' 下载失败；请检查网络后重试');}
-    finally{controllers.forEach(c=>c.abort());timers.forEach(clearTimeout);}
+  async function loadRuntime(){
+    if(runtimeDone)return;
+    const info=assets['runtime-files.json'];let bytes;
+    try{bytes=await gunzip(await transfer(new URL('runtime-files.json.gz'+version,root).href,'runtime'));if(await digest(bytes)!==info.sha256)throw new Error('校验失败');}
+    catch(_){bytes=await transfer(new URL('runtime-files.json'+version,root).href,'runtime');}
+    if(bytes.length!==info.bytes||await digest(bytes)!==info.sha256)throw new Error('字典引擎文件校验失败');await put('runtime-files.json',bytes);
   }
-  progress('正在准备引擎资源',2);
-  await Promise.all(Object.entries(assets).map(async([name,info])=>{memory.set(new URL(name,root).href,await obtain(name,info));}));
+  progress(vendorDone?'正在读取已缓存的引擎':'正在下载压缩引擎包',vendorDone?85:2);
+  await Promise.all([loadVendor(),loadRuntime()]);
   const responseFor = (url,bytes) => new Response(bytes,{headers:{'Content-Type':url.endsWith('.wasm')?'application/wasm':url.endsWith('.js')?'text/javascript':'application/octet-stream'}});
   self.fetch=async(input,options)=>{const url=new URL(typeof input==='string'||input instanceof URL?input:input.url,root);url.search='';return memory.has(url.href)?responseFor(url.href,memory.get(url.href)):nativeFetch(input,options);};
   self.importScripts=(...urls)=>nativeImport(...urls.map(input=>{const url=new URL(input,root);url.search='';return memory.has(url.href)?URL.createObjectURL(new Blob([memory.get(url.href)],{type:'text/javascript'})):input;}));
