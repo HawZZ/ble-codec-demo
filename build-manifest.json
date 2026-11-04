@@ -1,5 +1,5 @@
 {
-  "buildId": "d58fdd631f099368",
+  "buildId": "013bb0562f1a4542",
   "pyodide": "0.28.3",
   "packages": {
     "attrs": "25.2.0",
@@ -25,36 +25,44 @@
       "sha256": "78b12c3a81360b357002334f0e70ea0e92eebf7a9b358805c03c48484945f3bb"
     },
     "README.md": {
-      "bytes": 3888,
-      "sha256": "0906a8aac64c6d0f1d2b9e88198661cd2da78ec8f403b97471431f57922b15a5"
+      "bytes": 4183,
+      "sha256": "236c4025f5aa3f2789de892998251601992d88624318b288c83caa2f86bdde6d"
     },
     "app.css": {
-      "bytes": 63355,
-      "sha256": "9cdb847197f65ea060fd2994c870221107b6a6b426faa7024a1ab009d5d50751"
+      "bytes": 64616,
+      "sha256": "100f89a504c928359831c393a6ff0b68c232a8bf4aa6c561db008669beab410d"
     },
     "app.js": {
-      "bytes": 107176,
-      "sha256": "641cef7a9ed8b22ea15b940db847c93f7a341778a6b5a2616a6a2ab9feaa6688"
+      "bytes": 107241,
+      "sha256": "af55471e3e77ff784ef5aa101d2f67b747639cd6462b12f803bb4b8290a3bc13"
     },
     "browser-runtime.js": {
-      "bytes": 3134,
-      "sha256": "4eedf9332a36f84642e5246a1fd81170a275d6ff47c9dd7e0b2bfc22a944fb46"
+      "bytes": 4512,
+      "sha256": "abc5889b9a43644af3ea42b2ce2394c19e04f1b99d7045c7450cc60200138185"
     },
     "codec-worker.js": {
-      "bytes": 6846,
-      "sha256": "979a768aee67dfb6e0f7924c491af986d0aea3beb0e2a418a3e125b26edc94a0"
+      "bytes": 8134,
+      "sha256": "9d2e20b1c251d5ebf0718ecd30e4574641197cd223683fdb95d439028d05b1c2"
     },
     "configuration-editor.js": {
       "bytes": 36970,
       "sha256": "054516f35427f744bad4ebe4a76bbc0d00ca5a74b77eaada5ece229588ff6736"
     },
+    "engine-assets.json": {
+      "bytes": 1956,
+      "sha256": "4b0a5d7f35b7feaa960b5b0eb66d4f23f5dea7956000c5a98eda2af5eb1598da"
+    },
     "index.html": {
-      "bytes": 40908,
-      "sha256": "65cce5777bbaa379e5d9912a5d76e7f654fe627f7893f2ee8844fef477d4f3e1"
+      "bytes": 41810,
+      "sha256": "f0fb71432904e36d89aff154370e2053fccfe6aeaf3ab74e7766ef29b4f47986"
     },
     "runtime-files.json": {
       "bytes": 516786,
       "sha256": "f462568d888333782bf7d4d9d32bb14b19befdb23c03645334a8d546a4eb0e6e"
+    },
+    "runtime-files.json.gz": {
+      "bytes": 52755,
+      "sha256": "7fa1131d1168f7a1667254fa9267f73e905dab411a707d51b864050d50f59757"
     },
     "samples/platform-types/ble-mapping.json": {
       "bytes": 10160,

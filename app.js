@@ -192,6 +192,7 @@
 
   function setServerState(status) {
     state.server = status;
+    if(status==='online')window.BLEBrowserRuntime?.markUsable();
     const wrapper = $('serverStatus');
     const text = $('serverStatusText');
     if (!wrapper || !text) return;

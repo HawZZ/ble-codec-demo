@@ -7,9 +7,23 @@
   let worker, watchdog, sequence = 0, failed = null, ready = false;
   let stage = '启动浏览器引擎';
   const pending = new Map();
+  let percent=0;
+  function loading(message, value) {
+    const panel=document.getElementById('engineLoading');
+    if(!panel)return;
+    panel.hidden=false;document.getElementById('demoSurface').inert=true;
+    document.getElementById('engineLoadingMessage').textContent=message;
+    if(Number.isFinite(value))percent=Math.max(percent,Math.min(99,value));
+    document.getElementById('engineLoadingProgress').value=percent;
+    document.getElementById('engineLoadingPercent').textContent=percent+'%';
+  }
+
   function failAll(error) {
     if (failed) return;
     failed = error;
+    loading(error.message);
+    document.getElementById('engineLoadingTitle').textContent='加载遇到问题';
+    document.getElementById('engineLoadingRetry').hidden=false;
     clearTimeout(watchdog);
     for (const { reject, timer } of pending.values()) {
       clearTimeout(timer);
@@ -25,6 +39,9 @@
   }
   function start() {
     failed = null;
+    percent=0;loading('正在连接下载服务…',0);
+    document.getElementById('engineLoadingTitle').textContent='正在准备实验台';
+    document.getElementById('engineLoadingRetry').hidden=true;
     ready = false;
     stage = '启动浏览器引擎';
     worker = new Worker(workerUrl);
@@ -33,6 +50,7 @@
       if (worker !== current || failed) return;
       if (data.type === 'progress') {
         stage = data.message;
+        loading(data.message,data.percent);
         watchStartup();
         const status = document.getElementById('serverStatusText');
         if (status) status.textContent = data.message;
@@ -62,7 +80,15 @@
     task.timer = setTimeout(() => failAll(Object.assign(new Error('编解码处理等待超时。可重新加载引擎，当前编辑内容会保留。'), { code: 'ENGINE_TIMEOUT' })), REQUEST_MS);
   }
   start();
+  document.getElementById('engineLoadingRetry').addEventListener('click',()=>document.getElementById('retryEngineBtn').click());
   window.BLEBrowserRuntime = {
+    markUsable() {
+      if(!ready||failed)return;
+      document.getElementById('engineLoadingProgress').value=100;
+      document.getElementById('engineLoadingPercent').textContent='100%';
+      document.getElementById('demoSurface').inert=false;
+      document.getElementById('engineLoading').hidden=true;
+    },
     restart() {
       if (!failed || pending.size) throw new Error('仅在引擎失败后重新加载');
       start();

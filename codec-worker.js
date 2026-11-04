@@ -4,76 +4,73 @@ let queue = Promise.resolve();
 
 async function initialize() {
   self.postMessage({ type: 'progress', message: '首次加载浏览器引擎，请稍候…' });
-  const originalFetch = self.fetch.bind(self);
-  const vendorRoot = new URL('./vendor/pyodide/', self.location.href).href;
-  let received = 0, lastProgress = 0;
-  const progress = message => self.postMessage({ type: 'progress', message });
-  // Each resource gets one retry. The deadline measures inactivity, not total
-  // transfer time: a slow but progressing download must be allowed to finish.
-  async function download(input, options) {
-    const name = new URL(typeof input === 'string' || input instanceof URL ? input : input.url, self.location.href).pathname.split('/').pop();
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const controller = new AbortController();
-      let timer, reader;
-      const touch = () => { clearTimeout(timer); timer = setTimeout(() => controller.abort(), 60000); };
-      try {
-        progress(`正在下载 ${name}${attempt ? ' · 重试1/1' : ''}…`);
-        touch();
-        const response = await originalFetch(input, { ...options, signal: controller.signal });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        if (!response.body) throw new Error('响应缺少内容');
-        reader = response.body.getReader();
-        const chunks = [];
-        let size = 0;
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          touch();
-          chunks.push(value);
-          size += value.byteLength;
-          received += value.byteLength;
-          if (Date.now() - lastProgress >= 250) {
-            progress(`正在下载 ${name} · 已接收 ${(received / 1048576).toFixed(1)} MB`);
-            lastProgress = Date.now();
-          }
-        }
-        const bytes = new Uint8Array(size);
-        let offset = 0;
-        for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
-        const headers = new Headers(response.headers);
-        headers.delete('Content-Length');
-        headers.delete('Content-Encoding');
-        return new Response(bytes, { status: response.status, statusText: response.statusText, headers });
-      } catch (error) {
-        if (reader) await reader.cancel().catch(() => {});
-        if (attempt) throw new Error(`${name} 下载失败：${error.name === 'AbortError' ? '连续60秒未收到数据' : error.message}`);
-      } finally { clearTimeout(timer); }
-    }
+  const nativeFetch = self.fetch.bind(self), nativeImport = self.importScripts.bind(self);
+  const root = new URL('./', self.location.href), vendorRoot = new URL('./vendor/pyodide/', root).href;
+  const version = self.location.search;
+  const progress = (message, percent) => self.postMessage({type:'progress',message,percent});
+  const metadata = await nativeFetch(new URL('engine-assets.json'+version,root));
+  if (!metadata.ok) throw new Error('引擎清单加载失败');
+  const assets = await metadata.json(), memory = new Map();
+  const total = Object.values(assets).reduce((n,a)=>n+a.bytes,0), loaded = new Map();
+  let cache;
+  try { cache = await caches.open('ble-public-engine-sha256-v1'); } catch (_) {}
+  const digest = async bytes => [...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(n=>n.toString(16).padStart(2,'0')).join('');
+  let last=0, high=0;
+  function update(name,bytes) {
+    loaded.set(name,Math.max(loaded.get(name)||0,bytes));
+    high=Math.max(high,Math.min(85,Math.floor([...loaded.values()].reduce((a,b)=>a+b,0)/total*85)));
+    if(Date.now()-last>150) {progress('正在下载并校验引擎资源',high);last=Date.now();}
   }
-  self.fetch = async (input, options) => {
-    const url = new URL(typeof input === 'string' || input instanceof URL ? input : input.url, self.location.href).href;
-    if (url === vendorRoot + 'pyodide.asm.wasm' && typeof DecompressionStream !== 'undefined') {
-      try {
-        const response = await download(url + '.gz', options);
-        // Finish decompression here, so corrupted gzip also takes the raw fallback.
-        const bytes = await new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
-        return new Response(bytes, { headers: { 'Content-Type': 'application/wasm' } });
-      } catch (error) {
-        progress('压缩引擎不可用，正在切换原始WASM…');
-      }
-    }
-    if (url.startsWith(vendorRoot) || url.includes('/runtime-files.json')) return download(input, options);
-    return originalFetch(input, options);
-  };
-  importScripts('./vendor/pyodide/pyodide.js');
-  const pyodide = await loadPyodide({ indexURL: new URL('./vendor/pyodide/', self.location.href).href });
-  self.postMessage({ type: 'progress', message: '正在加载模型校验组件…' });
+  async function transfer(url, signal, name) {
+    const controller=new AbortController();
+    const abort=()=>controller.abort(); signal.addEventListener('abort',abort,{once:true});
+    let timer,reader;
+    const touch=()=>{clearTimeout(timer);timer=setTimeout(abort,20000);};
+    try {
+      touch();const response=await nativeFetch(url,{signal:controller.signal});
+      if(!response.ok||!response.body)throw new Error('HTTP '+response.status);
+      reader=response.body.getReader();const chunks=[];let size=0;
+      while(true){const {done,value}=await reader.read();if(done)break;touch();chunks.push(value);size+=value.length;update(name,size);}
+      const bytes=new Uint8Array(size);let offset=0;for(const b of chunks){bytes.set(b,offset);offset+=b.length;}return bytes;
+    } finally {clearTimeout(timer);signal.removeEventListener('abort',abort);if(controller.signal.aborted&&reader)reader.cancel().catch(()=>{});}
+  }
+  async function obtain(name, info) {
+    const key=new URL('__public_engine__/'+info.sha256,root).href;
+    if(cache){const hit=await cache.match(key);if(hit){const bytes=new Uint8Array(await hit.arrayBuffer());if(await digest(bytes)===info.sha256){update(name,info.bytes);return bytes;}await cache.delete(key);}}
+    const controllers=[],timers=[];
+    const source=async(url,delay=0,gzip=false)=>{
+      const c=new AbortController();controllers.push(c);
+      if(delay)await new Promise((resolve,reject)=>{const t=setTimeout(resolve,delay);timers.push(t);c.signal.addEventListener('abort',()=>{clearTimeout(t);reject(new Error('Canceled'));},{once:true});});
+      let error;
+      for(let attempt=0;attempt<2;attempt++){
+        try {let bytes=await transfer(url,c.signal,name);
+          if(gzip)bytes=new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
+          if(bytes.length!==info.bytes||await digest(bytes)!==info.sha256)throw new Error('资源校验不匹配');return bytes;
+        }catch(e){error=e;if(c.signal.aborted)throw e;}
+      }throw error;
+    };
+    const local=new URL(name+version,root).href;
+    const candidates=name.startsWith('vendor/pyodide/')?
+      [source('https://cdn.jsdelivr.net/pyodide/v0.28.3/full/'+name.split('/').pop()),source(local,1200)]:
+      (typeof DecompressionStream!=='undefined'?[source(new URL(name+'.gz'+version,root).href,0,true),source(local,1200)]:[source(local)]);
+    try {
+      const bytes=await Promise.any(candidates);update(name,info.bytes);
+      if(cache)await cache.put(key,new Response(bytes)).catch(()=>{});return bytes;
+    }catch(e){throw new Error(name+' 下载失败；请检查网络后重试');}
+    finally{controllers.forEach(c=>c.abort());timers.forEach(clearTimeout);}
+  }
+  progress('正在准备引擎资源',2);
+  await Promise.all(Object.entries(assets).map(async([name,info])=>{memory.set(new URL(name,root).href,await obtain(name,info));}));
+  const responseFor = (url,bytes) => new Response(bytes,{headers:{'Content-Type':url.endsWith('.wasm')?'application/wasm':url.endsWith('.js')?'text/javascript':'application/octet-stream'}});
+  self.fetch=async(input,options)=>{const url=new URL(typeof input==='string'||input instanceof URL?input:input.url,root);url.search='';return memory.has(url.href)?responseFor(url.href,memory.get(url.href)):nativeFetch(input,options);};
+  self.importScripts=(...urls)=>nativeImport(...urls.map(input=>{const url=new URL(input,root);url.search='';return memory.has(url.href)?URL.createObjectURL(new Blob([memory.get(url.href)],{type:'text/javascript'})):input;}));
+  progress('正在启动本地编解码引擎',88);
+  self.importScripts(vendorRoot+'pyodide.js');
+  const pyodide=await loadPyodide({indexURL:vendorRoot});
+  progress('正在加载模型校验组件',93);
   await pyodide.loadPackage('jsonschema');
-  self.postMessage({ type: 'progress', message: '正在载入字典编译器…' });
-  const runtimeUrl = new URL('./runtime-files.json', self.location.href);
-  runtimeUrl.search = self.location.search;
-  const response = await fetch(runtimeUrl.href);
-  if (!response.ok) throw new Error('无法加载编解码引擎文件');
+  progress('正在准备字典和样例',97);
+  const response=responseFor('runtime-files.json',memory.get(new URL('runtime-files.json',root).href));
   const files = await response.json();
   for (const [path, text] of Object.entries(files)) {
     pyodide.FS.mkdirTree(path.slice(0, path.lastIndexOf('/')));
