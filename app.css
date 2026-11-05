@@ -3481,3 +3481,8 @@ button:disabled {
 .engine-loading-track strong {min-width:44px;font-variant-numeric:tabular-nums;}
 .engine-loading-help {font-size:14px;line-height:1.7;color:#63756b;}
 @media(max-width:500px){.engine-loading-card{padding:24px;}.engine-loading-card h2{font-size:23px;}}
+
+/* Attribute requests and explicit state projections share the existing panel language. */
+.property-set-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+.property-set-grid>.panel{min-width:0;padding:24px}.property-set-field{padding:18px 0;border-bottom:1px solid var(--border,#d9ddd3);display:grid;gap:10px}.property-set-label{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.property-set-label input{width:18px;height:18px;accent-color:#08766b}.property-set-field code{overflow-wrap:anywhere}.property-set-field textarea{width:100%;max-width:100%}.property-frame{padding:18px 0;border-top:1px solid #d9ddd3}.property-frame pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.65}.property-frame-hex{background:#f1f4ed;padding:14px;border-radius:8px;font-weight:600}#propertySetFeedback{white-space:pre-line;line-height:1.8;overflow-wrap:anywhere}.projection-config{margin:22px 0;padding:18px;border:1px solid #d9ddd3;border-radius:12px}.projection-config h3{margin:0 0 10px}.projection-config p{line-height:1.7;color:#64756d}#projectionSuggestions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}#mapProperties{min-height:125px}.primary-tabs{flex-wrap:wrap}
+@media(max-width:800px){.property-set-grid{grid-template-columns:minmax(0,1fr)}.property-set-grid>.panel{padding:16px}#propertySetPanel>.lab-heading{align-items:start;gap:16px;flex-wrap:wrap}.primary-tabs{gap:2px}.primary-tab{padding:10px 12px}}

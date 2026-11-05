@@ -1,5 +1,5 @@
 {
-  "buildId": "7916849b585aa1ae",
+  "buildId": "f75ebc8ccf395b9d",
   "pyodide": "0.28.3",
   "packages": {
     "attrs": "25.2.0",
@@ -25,28 +25,28 @@
       "sha256": "78b12c3a81360b357002334f0e70ea0e92eebf7a9b358805c03c48484945f3bb"
     },
     "README.md": {
-      "bytes": 4583,
-      "sha256": "dd7f2a8708fac110e0e6aa78999f8f4ceb9c0a42964ee8b9b80e5ae55cfaf873"
+      "bytes": 5417,
+      "sha256": "fc325b8a84cce3fecd2824ba76d8bc13b3cc96863f1a0baf070ffe68bf3603a7"
     },
     "app.css": {
-      "bytes": 64616,
-      "sha256": "100f89a504c928359831c393a6ff0b68c232a8bf4aa6c561db008669beab410d"
+      "bytes": 66109,
+      "sha256": "992585e9acd71ab012c6fd994c903c8bae604caf79b775ecfbc8d680f697648a"
     },
     "app.js": {
-      "bytes": 107241,
-      "sha256": "af55471e3e77ff784ef5aa101d2f67b747639cd6462b12f803bb4b8290a3bc13"
+      "bytes": 115860,
+      "sha256": "3f35f89aa0b1b42044bdccc1cfb3895414e1d0b63fd4b02db910af6d9ec52d46"
     },
     "browser-runtime.js": {
       "bytes": 4512,
       "sha256": "abc5889b9a43644af3ea42b2ce2394c19e04f1b99d7045c7450cc60200138185"
     },
     "codec-worker.js": {
-      "bytes": 10303,
-      "sha256": "a4428d2cc375f5eb842795b305ac0bd25c0a6afed5ac411427b66e9c262ab95f"
+      "bytes": 10479,
+      "sha256": "a84f6a2e6674cdd6b12cce4f222d31dc3b5b614f2deedfdd1da26f268aff53f2"
     },
     "configuration-editor.js": {
-      "bytes": 36970,
-      "sha256": "054516f35427f744bad4ebe4a76bbc0d00ca5a74b77eaada5ece229588ff6736"
+      "bytes": 39838,
+      "sha256": "df137440efba2ef237997206cb0f4216f25c41a6a2748522b81663537028fa4e"
     },
     "engine-48d0695dc3b6b55e.bin.gz": {
       "bytes": 5834636,
@@ -54,19 +54,19 @@
     },
     "engine-assets.json": {
       "bytes": 2164,
-      "sha256": "bfbb6dca2c1c25ed8e78ea69dd5e94f267d97757c1b65b29d224db7d0fc09248"
+      "sha256": "8f464909ff7dcf15b93b3938d2017fdd1c872872736d50215292e59c227658b6"
     },
     "index.html": {
-      "bytes": 41810,
-      "sha256": "12bd87e4d0a15a2e171e454b6a6fbc2424a30ee66012dd077791a8b149e1f0fa"
+      "bytes": 43044,
+      "sha256": "00747d42d6b2fb2675efc68a3fd9d5a49f737e3b94baebb1eed7dcacb8aa9b6b"
     },
     "runtime-files.json": {
-      "bytes": 516786,
-      "sha256": "f462568d888333782bf7d4d9d32bb14b19befdb23c03645334a8d546a4eb0e6e"
+      "bytes": 529947,
+      "sha256": "3f64f2589e6a810cc6f698110d1caa1159d52bc67c9ff9261113c667addfc1f1"
     },
     "runtime-files.json.gz": {
-      "bytes": 52755,
-      "sha256": "7fa1131d1168f7a1667254fa9267f73e905dab411a707d51b864050d50f59757"
+      "bytes": 55062,
+      "sha256": "bbe9d4d1429fcaa36e68800a56d5d0ed9fdd2e438a75b0d1dc738cd6b8cc7a92"
     },
     "samples/platform-types/ble-mapping.json": {
       "bytes": 10160,
@@ -75,6 +75,14 @@
     "samples/platform-types/thing-model.json": {
       "bytes": 1991,
       "sha256": "2170632395121a8bad3998d578c533f9f274cf8d65b702fa1f5eef9d51c437d4"
+    },
+    "samples/property-set/ble-mapping.json": {
+      "bytes": 2881,
+      "sha256": "96fb01de7c92054d86ba3b970e41194a44e63d435a8b6c1c50a33bcee18de7e2"
+    },
+    "samples/property-set/thing-model.json": {
+      "bytes": 1953,
+      "sha256": "0c0c5af1d07716fa8efa509139831e4e1b6fb3e3ba0beccb8ebc685992e48c9e"
     },
     "samples/pump/ble-mapping.json": {
       "bytes": 56669,
@@ -93,16 +101,16 @@
       "sha256": "32e65af538f396ac8b4ed9433fa2b3dfcda4ed475b3b88afc639b221c0b7d828"
     },
     "schemas/ble-thing-mapping.schema.json": {
-      "bytes": 11335,
-      "sha256": "dd8f103c34804511535bdab622f4ea4b85fc300f994f8757fabc281bf813b19a"
+      "bytes": 12399,
+      "sha256": "bc450cc0486f8aeaeca6a56974190322cc331c575d9d492e01a83e174840458a"
     },
     "schemas/thing-model-definition.schema.json": {
       "bytes": 8648,
       "sha256": "cbbfbd6dcb5eb0033a17da857cf3235acbd9d9544113761ff26c4bca6a5c6547"
     },
     "two-file-contract.md": {
-      "bytes": 21499,
-      "sha256": "63139c5b88342cd082ddbef964330c6bd66967453bba30e6aa148c7d723d63df"
+      "bytes": 23978,
+      "sha256": "30fcf96809aa8ad33d95e6d2bf4489cbf4a039baa72bd31e5396addcd9539b90"
     },
     "vendor/pyodide/attrs-25.2.0-py3-none-any.whl": {
       "bytes": 64016,

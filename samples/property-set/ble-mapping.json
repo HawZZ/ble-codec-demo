@@ -1,0 +1,138 @@
+{
+  "requiredCapabilities": [
+    "boolean-integer/1",
+    "model-reference/1",
+    "platform-types/1",
+    "property-groups/1",
+    "property-updates/1",
+    "tlv-length-1-2/1"
+  ],
+  "format": "ble-thing-mapping/1",
+  "commands": [
+    {
+      "id": "set_pair",
+      "target": {
+        "kind": "property",
+        "behavior": "write",
+        "identifiers": [
+          "mode",
+          "level"
+        ]
+      },
+      "sid": "80",
+      "cid": "01",
+      "interaction": "one_way",
+      "receiveVariants": [],
+      "correlation": "none",
+      "source": "",
+      "availability": "active",
+      "request": [
+        {
+          "field": "mode",
+          "tlv": "01",
+          "wireType": "u8",
+          "required": true
+        },
+        {
+          "field": "level",
+          "tlv": "02",
+          "wireType": "u8",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "set_mode",
+      "target": {
+        "kind": "property",
+        "identifier": "mode",
+        "behavior": "write"
+      },
+      "sid": "80",
+      "cid": "02",
+      "interaction": "one_way",
+      "receiveVariants": [],
+      "correlation": "none",
+      "source": "",
+      "availability": "active",
+      "request": [
+        {
+          "field": "mode",
+          "tlv": "01",
+          "wireType": "u8",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "set_enabled",
+      "target": {
+        "kind": "property",
+        "identifier": "enabled",
+        "behavior": "write"
+      },
+      "sid": "80",
+      "cid": "03",
+      "interaction": "one_way",
+      "receiveVariants": [],
+      "correlation": "none",
+      "source": "",
+      "availability": "active",
+      "request": [
+        {
+          "field": "enabled",
+          "tlv": "01",
+          "wireType": "u8",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "get_state",
+      "target": {
+        "kind": "service",
+        "identifier": "get_state"
+      },
+      "sid": "80",
+      "cid": "04",
+      "interaction": "query_and_report",
+      "receiveVariants": [
+        "incoming"
+      ],
+      "correlation": "none",
+      "source": "",
+      "availability": "active",
+      "incoming": [
+        {
+          "field": "mode",
+          "tlv": "01",
+          "wireType": "u8",
+          "required": false
+        },
+        {
+          "field": "level",
+          "tlv": "02",
+          "wireType": "u8",
+          "required": false
+        },
+        {
+          "field": "battery",
+          "tlv": "03",
+          "wireType": "u8",
+          "required": false
+        }
+      ],
+      "propertyUpdates": [
+        {
+          "from": "level",
+          "to": "level"
+        }
+      ]
+    }
+  ],
+  "modelRef": {
+    "id": "property-set-synthetic",
+    "version": "1",
+    "sha256": "2323c765d5a53cfb931923b33e9f9d9404421aa23d545f56912005f808e0e676"
+  }
+}

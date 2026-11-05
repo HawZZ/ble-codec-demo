@@ -1,0 +1,91 @@
+{
+  "version": "1",
+  "format": "thing-model-definition/1.0",
+  "id": "property-set-synthetic",
+  "description": "SID80合成样例；不代表正式设备地址。",
+  "properties": {
+    "mode": {
+      "type": "integer",
+      "platformType": "Enum",
+      "enum": [
+        0,
+        1,
+        2
+      ],
+      "access": "rw",
+      "title": "模式"
+    },
+    "level": {
+      "type": "integer",
+      "platformType": "Int32",
+      "minimum": 0,
+      "maximum": 10,
+      "multipleOf": 1,
+      "access": "rw",
+      "title": "档位"
+    },
+    "enabled": {
+      "type": "boolean",
+      "platformType": "Bool",
+      "access": "rw",
+      "title": "开关"
+    },
+    "battery": {
+      "type": "integer",
+      "platformType": "Int32",
+      "minimum": 0,
+      "maximum": 100,
+      "access": "r",
+      "title": "电量"
+    },
+    "unbound": {
+      "type": "integer",
+      "platformType": "Int32",
+      "access": "rw",
+      "title": "未绑定示例"
+    }
+  },
+  "events": {},
+  "services": {
+    "get_state": {
+      "input": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "integer",
+            "platformType": "Enum",
+            "enum": [
+              0,
+              1,
+              2
+            ],
+            "title": "模式"
+          },
+          "level": {
+            "type": "integer",
+            "platformType": "Int32",
+            "minimum": 0,
+            "maximum": 10,
+            "multipleOf": 1,
+            "title": "档位"
+          },
+          "battery": {
+            "type": "integer",
+            "platformType": "Int32",
+            "minimum": 0,
+            "maximum": 100,
+            "title": "电量"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    }
+  }
+}

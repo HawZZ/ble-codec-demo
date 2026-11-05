@@ -1,6 +1,6 @@
 # 物模型与BLE映射：两个JSON即可接入
 
-版本：0.2评审（2026-11-03）  
+版本：0.4评审（2026-11-05）  
 状态：统一交换契约的评审文档。本版不替换已发布0.6.1，也不修改旧冻结材料。文档定义、离线验证、Demo部署和真实设备验收分别记录；Demo入口为 https://hawzz.github.io/ble-codec-demo/ 。
 
 本说明约定产品接入时日常交付的两个JSON。它描述基于原产品报文的业务模型和线地址映射，不把现有设备报文改成统一的读、写、动作CID，也不声明兼容任意云平台的物模型格式或原生TSL。
@@ -9,7 +9,7 @@
 
 Demo默认按属性／事件／服务三个标签表格维护物模型，并保留结构树和JSON视图。指令表只展示物模型功能、SID、CID、交互及操作；字段表按当前指令和上下行展示业务字段、TLV地址、线上类型、是否必带及操作。
 
-内部指令ID由系统生成且保持稳定；格式、版本、模型引用和能力声明不要求人工填写。来源和备注作为说明；关联限制及已有超时只读保留。倍率1、数值偏移0无需重复配置；固定类型字节宽度自动确定。高级详情继续保留变长字节限制、成功码、上行属性更新和组合约束。业务范围、工程值步长与枚举不能只写在说明中，线上类型也不能只凭物模型类型推断。
+内部指令ID由系统生成且保持稳定；格式、版本、模型引用和能力声明不要求人工填写。来源和备注作为说明；关联限制及已有超时只读保留。倍率1、数值偏移0无需重复配置；固定类型字节宽度自动确定。上行属性更新单独展示明确关联配置；高级详情继续保留变长字节限制、成功码和组合约束。业务范围、工程值步长与枚举不能只写在说明中，线上类型也不能只凭物模型类型推断。
 
 界面收起字段不意味着从机器文件删除语义。既有两文件、CSV、工作区及高级元数据仍按下文契约读写；维护入口的简化不删除语义；本轮增补platformType及能力校验，格式标识、地址及报文字节不变。通过表格或结构树重命名会更新明确关联的引用；直接编辑JSON须校验现有映射，失败不替换有效模型。
 
@@ -94,6 +94,22 @@ JSON子集继续支持properties、items、required、additionalProperties=false
 
 `constraints[].fields`的每一项只能是一个英文字段标识符，不能把多个字段用`|`拼成单项。数组元素路径的`[]`只用于`field`和模型结构，不可用于`propertyUpdates.from`。
 
+### 3.1 单属性与多属性设置目标
+
+单属性保持`target: {"kind":"property","identifier":"level","behavior":"write"}`。多属性使用`target: {"kind":"property","identifiers":["mode","level"],"behavior":"write"}`；`identifier`与`identifiers`互斥。数组至少两个不同的已存在可写属性，每个均有请求绑定；本轮不用于read或report。请求字段相对于这些属性构成的对象，沿用嵌套路径、TLV及组合约束。
+
+系统按实际使用声明`property-groups/1`，消费者不支持或能力漏报时拒绝；format保持不变。普通配置人员无需维护能力名或内部目标串。
+
+### 3.2 APP统一property set的规划接口
+
+Python共享入口`plan_property_set(workspace, properties, selections)`；HTTP和Worker入口为`POST /api/demo/property-set/plan`，请求包含同名三个字段，selections可省略。选择只来自启用的属性write映射；无映射拒绝，多候选需按属性显式指定指令ID。同指令合并，按commands顺序输出；所有报文完成预检后才返回，缺必填不使用默认值或缓存。需要附加业务参数的复杂调用使用service。
+
+成功返回`ok:true`、`kind:"property_set_request"`、`requestedProperties`和`commands`。每条含operation、sid、cid、properties、hex、byte_length、interaction、receiveVariants、correlation、timeoutMs。`sent:false`、`stateUpdated:false`、`atomic:false`表示仅生成清单，未发送、不更新状态、跨指令不保证原子性。执行者仍遵循产品原时序。
+
+绑定或候选错误返回`PROPERTY_SET_UNRESOLVED`，字段或编码错误返回`PROPERTY_SET_INVALID`，含issues；空输入及错误selections返回对应输入错误。所有失败均不含commands；不能返回已经预检成功的一部分指令。原逐指令转换接口保持兼容。
+
+可验算样例见`examples/ble-codec-demo/property-set/`及主稿§5.6；合成SID80不代表已登记品类。
+
 ## 4. 上行属性更新与结果语义
 
 `propertyUpdates`把本次上行数据中的值投影为物模型顶层属性patch，格式为：
@@ -101,6 +117,8 @@ JSON子集继续支持properties、items、required、additionalProperties=false
 ```json
 {"from": "上行数据对象中的路径", "to": "顶层属性名"}
 ```
+
+同名且结构兼容的服务输出只提供一键关联建议，用户确认后才保存propertyUpdates；不同标识也允许明确关联。关系按指令存储，不增加物模型引用语法。不关联时仅生成服务output／事件数据，不因名称相同自动更新属性。界面直接展示关联配置，重命名和删除继续执行引用校验。
 
 约束如下：
 
@@ -138,7 +156,7 @@ JSON子集继续支持properties、items、required、additionalProperties=false
 
 模型带ID或版本时，`modelRef`必须同时带上相同的ID和版本。消费者重新计算模型内容SHA，并拒绝两文件不配套的组合。
 
-`requiredCapabilities`由模型和映射实际使用能力计算，至少包括`model-reference/1`和`tlv-length-1-2/1`。使用属性更新、嵌套TLV、纯上行、重复对象、结果成功码或数值默认步长时，还必须分别声明`property-updates/1`、`nested-tlv/1`、`receive-only/1`、`repeated-object/1`、`result-success-code/1`或`numeric-defaults/1`。模型包含platformType时还须声明`platform-types/1`；消费者拒绝未知能力和漏报能力。
+`requiredCapabilities`由模型和映射实际使用能力计算，至少包括`model-reference/1`和`tlv-length-1-2/1`。使用属性更新、嵌套TLV、纯上行、重复对象、结果成功码或数值默认步长时，还必须分别声明`property-updates/1`、`nested-tlv/1`、`receive-only/1`、`repeated-object/1`、`result-success-code/1`或`numeric-defaults/1`。模型包含platformType时还须声明`platform-types/1`；使用多属性write目标时须声明`property-groups/1`；Bool映射整数时须声明`boolean-integer/1`。消费者拒绝未知能力和漏报能力。
 
 模型内容SHA256采用本项目`model-content v1`算法：
 

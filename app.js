@@ -357,6 +357,7 @@
     renderModelEditor();
     renderTable();
     renderLab();
+    renderPropertySet();
   }
 
   function renderWorkspaceMeta() {
@@ -406,6 +407,7 @@
     button.textContent = state.compile.status === 'compiling' ? '编译中…' : '重新编译';
     $('exportDictionaryBtn').disabled = !hasCompiledDictionary();
     $('exportPairBtn').disabled = !hasCompiledDictionary();
+    $('planPropertySetBtn').disabled = state.compile.status !== 'ready' || propertyDraft.busy;
   }
 
   function renderIdentity() {
@@ -428,19 +430,24 @@
   }
 
   function activateTab(tab) {
-    state.activeTab = tab === 'lab' ? 'lab' : 'config';
+    state.activeTab = ['lab','property-set'].includes(tab) ? tab : 'config';
     const config = $('configPanel');
     const lab = $('labPanel');
     const configButton = $('configTabBtn');
     const labButton = $('labTabBtn');
     const isConfig = state.activeTab === 'config';
     config.hidden = !isConfig;
-    lab.hidden = isConfig;
+    lab.hidden = state.activeTab !== 'lab';
+    $('propertySetPanel').hidden=state.activeTab!=='property-set';
+    $('propertySetTabBtn').classList.toggle('is-active',state.activeTab==='property-set');
+    $('propertySetTabBtn').setAttribute('aria-selected',String(state.activeTab==='property-set'));
+    for (const button of document.querySelectorAll('[data-tab]')) button.tabIndex = button.dataset.tab === state.activeTab ? 0 : -1;
     configButton.classList.toggle('is-active', isConfig);
-    labButton.classList.toggle('is-active', !isConfig);
+    labButton.classList.toggle('is-active', state.activeTab==='lab');
     configButton.setAttribute('aria-selected', String(isConfig));
-    labButton.setAttribute('aria-selected', String(!isConfig));
-    if (!isConfig) renderLab();
+    labButton.setAttribute('aria-selected', String(state.activeTab==='lab'));
+    if (state.activeTab==='lab') renderLab();
+    if (state.activeTab==='property-set') renderPropertySet();
   }
 
   function renderExamples() {
@@ -589,6 +596,7 @@
       renderCompileStatus();
       renderIdentity();
       renderLab();
+      renderPropertySet();
       if (manual) showToast(`编译完成：${state.compile.operations.length} 条指令`);
     } catch (error) {
       if (serial !== state.compile.serial || capturedRevision !== state.revision) return;
@@ -1978,7 +1986,7 @@
     $('resultBits').textContent = result.bits || '';
     $('resultModelJson').textContent = pretty(result.thing_model_json ?? result.model_json ?? null);
     $('hexResultLabel').textContent = encodeMode ? '应用层 HEX · 编码结果' : '应用层 HEX · 原始 PDU';
-    $('modelResultLabel').textContent = encodeMode ? '转换复核 JSON' : '物模型数据 JSON';
+    $('modelResultLabel').textContent = state.lab.direction==='down' ? '设置／查询请求 JSON · 非设备当前状态' : encodeMode ? '上行样例 JSON' : '物模型数据 JSON';
     $('modelResultHint').textContent = result.operation ? `指令：${result.operation}` : '由当前工作区重新编译后解析';
 
     const metadata = isObject(result.metadata) ? result.metadata : {};
@@ -2404,6 +2412,12 @@
   function bindEvents() {
     $('configTabBtn').addEventListener('click', () => activateTab('config'));
     $('labTabBtn').addEventListener('click', () => activateTab('lab'));
+    $('propertySetTabBtn').addEventListener('click',()=>activateTab('property-set'));
+    $('planPropertySetBtn').addEventListener('click',generatePropertySet);
+    for(const button of document.querySelectorAll('.primary-tabs [role="tab"]'))button.addEventListener('keydown',event=>{
+      if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+      event.preventDefault();const tabs=[...button.parentElement.querySelectorAll('[role="tab"]')],i=tabs.indexOf(button),next=tabs[event.key==='Home'?0:event.key==='End'?tabs.length-1:(i+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length];next.focus();next.click();
+    });
     $('compileBtn').addEventListener('click', () => compileWorkspace(true));
     $('exportWorkspaceBtn').addEventListener('click', exportWorkspace);
     $('exportPairBtn').addEventListener('click', exportPair);
@@ -2518,6 +2532,65 @@
 
     bindDialogBackdrop($('importDialog'));
     bindDialogBackdrop($('nodeDialog'));
+  }
+
+  const propertyDraft={signature:'',selected:new Set(),raw:{},selections:{},serial:0,result:null,busy:false};
+  function propertyCandidates(name) {
+    return state.workspace.commands.filter(c=>c.availability!=='suspended'&&c.method.startsWith('property:')&&c.method.split(':')[2]==='write'&&c.method.split(':')[1].split('|').includes(name));
+  }
+  function propertyInputChanged() {
+    propertyDraft.serial++;propertyDraft.result=null;$('propertySetFrames').replaceChildren();
+    $('propertySetFeedback').textContent='输入已变化，请重新生成；设备状态未更新。';
+  }
+  function renderPropertySet() {
+    const signature=JSON.stringify(workspaceSnapshot());
+    if(signature!==propertyDraft.signature){propertyDraft.signature=signature;propertyDraft.selected.clear();propertyDraft.raw={};propertyDraft.selections={};propertyInputChanged();}
+    $('planPropertySetBtn').disabled=state.compile.status!=='ready'||propertyDraft.busy;
+    const root=$('propertySetFields');root.replaceChildren();
+    const properties=Object.entries(state.workspace.model.properties).filter(([,s])=>(s.access||'').includes('w'));
+    if(!properties.length){root.textContent='当前模型没有可写属性。可先导入属性设置样例，或在物模型中新增属性及真实设置绑定。';return;}
+    for(const [name,schema] of properties) {
+      const row=createTextElement('div','property-set-field');row.dataset.propertySetField=name;
+      const label=createTextElement('label','property-set-label'),toggle=document.createElement('input');toggle.type='checkbox';toggle.checked=propertyDraft.selected.has(name);toggle.dataset.propertySelect=name;toggle.setAttribute('aria-label',`设置 ${name}`);label.append(toggle,createTextElement('strong','',schema.title||name),createTextElement('code','',name),createTextElement('span','muted',typeLabel(schema)));row.append(label);
+      toggle.onchange=()=>{if(toggle.checked)propertyDraft.selected.add(name);else{propertyDraft.selected.delete(name);delete propertyDraft.selections[name];}propertyInputChanged();renderPropertySet();};
+      const candidates=propertyCandidates(name),description=createTextElement('p','field-help');description.textContent=candidates.length?candidates.map(c=>`${c.sid}/${c.cid} · ${c.operation}`).join('；'):'未配置启用的属性设置绑定';row.append(description);
+      if(propertyDraft.selected.has(name)) {
+        let input;
+        if(schema.enum||schema.type==='boolean') {
+          input=document.createElement('select');input.className='select';input.append(new Option('请选择明确的值',''));
+          for(const v of schema.enum||[false,true])input.append(new Option(JSON.stringify(v),JSON.stringify(v)));
+        } else if(['object','array'].includes(schema.type)) {input=document.createElement('textarea');input.className='input';input.rows=3;input.placeholder=schema.type==='object'?'填写对象JSON，例如 {"level": 2}':'填写数组JSON，例如 [1, 2]';}
+        else {input=document.createElement('input');input.className='input';input.type=['integer','number'].includes(schema.type)?'number':'text';if(input.type==='number'){input.step=schema.multipleOf??(schema.type==='integer'?'1':'any');if(schema.minimum!=null)input.min=schema.minimum;if(schema.maximum!=null)input.max=schema.maximum;}input.placeholder='请明确填写值';}
+        input.value=propertyDraft.raw[name]??'';input.dataset.propertyValue=name;input.setAttribute('aria-label',`${name} 设置值`);input.addEventListener(input.tagName==='SELECT'?'change':'input',()=>{propertyDraft.raw[name]=input.value;propertyInputChanged();});row.append(input);
+        if(candidates.length>1) {const select=document.createElement('select');select.className='select';select.dataset.propertyRoute=name;select.setAttribute('aria-label',`${name} 设置指令`);select.append(new Option('多个候选：请选择指令',''));for(const c of candidates)select.append(new Option(`${c.sid}/${c.cid} · ${c.operation}`,c.operation));select.value=propertyDraft.selections[name]||'';select.onchange=()=>{if(select.value)propertyDraft.selections[name]=select.value;else delete propertyDraft.selections[name];propertyInputChanged();};row.append(select);}
+      }
+      root.append(row);
+    }
+  }
+  async function generatePropertySet() {
+    if(!guardJsonDraft()||state.compile.status!=='ready'||propertyDraft.busy)return;
+    propertyInputChanged();const serial=propertyDraft.serial,revision=state.revision,properties={};
+    try {
+      for(const name of propertyDraft.selected) {
+        const s=state.workspace.model.properties[name],raw=propertyDraft.raw[name];
+        if(raw===undefined||(['integer','number','boolean','object','array'].includes(s.type)||s.enum)&&raw==='')throw new Error(`请明确填写 ${name} 的设置值；不会自动补值`);
+        properties[name]=s.enum||['boolean','object','array'].includes(s.type)?JSON.parse(raw):['integer','number'].includes(s.type)?Number(raw):raw;
+      }
+      propertyDraft.busy=true;$('planPropertySetBtn').disabled=true;$('propertySetFeedback').textContent='正在校验全部属性与指令…';
+      const options={method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({workspace:workspaceSnapshot(),properties,selections:propertyDraft.selections})};
+      const response=window.BLEBrowserRuntime?await window.BLEBrowserRuntime.request('/api/demo/property-set/plan',options):await fetch('/api/demo/property-set/plan',options).then(r=>r.json());
+      if(serial!==propertyDraft.serial||revision!==state.revision)return;
+      propertyDraft.result=response;
+      if(!response.ok) {
+        $('propertySetFeedback').textContent=[response.error+' · '+response.message,...(response.issues||[]).map(i=>`${i.property||i.operation}：${i.message}${i.requiredFields?'；协议必填：'+i.requiredFields.join('、'):''}${i.properties?'；可在左侧选择并补全：'+i.properties.join('、'):''}`)].join('\n');return;
+      }
+      $('propertySetFeedback').textContent=`已生成 ${response.commands.length} 条设置请求，未发送、未更新设备状态；跨指令不保证原子性。执行时仍须遵循产品协议时序。`;
+      for(const [i,frame] of response.commands.entries()) {
+        const interaction={one_way:'单向下发，不等待应用回包',request_response:'请求后按产品定义等待响应',query_and_report:'查询响应与主动上报共用布局，不能精确关联',receive_only:'仅接收上行'}[frame.interaction]||frame.interaction;
+        const card=createTextElement('section','property-frame');card.append(createTextElement('h4','',`${i+1}. ${frame.sid}/${frame.cid} · ${frame.operation}`),createTextElement('p','field-help',`${interaction} · ${frame.byte_length} B · 未发送`),createTextElement('pre','property-frame-hex',frame.hex),createTextElement('pre','',pretty({properties:frame.properties})));$('propertySetFrames').append(card);
+      }
+    } catch(error) {if(serial===propertyDraft.serial)$('propertySetFeedback').textContent=error.code?`${error.code} · ${error.message}`:error.message;}
+    finally{propertyDraft.busy=false;$('planPropertySetBtn').disabled=state.compile.status!=='ready';}
   }
 
   function init() {

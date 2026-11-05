@@ -50,11 +50,19 @@
                   "write",
                   "report"
                 ]
+              },
+              "identifiers": {
+                "type": "array",
+                "minItems": 2,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+                }
               }
             },
             "required": [
-              "kind",
-              "identifier"
+              "kind"
             ],
             "additionalProperties": false,
             "allOf": [
@@ -76,6 +84,38 @@
                     "required": [
                       "behavior"
                     ]
+                  }
+                }
+              }
+            ],
+            "oneOf": [
+              {
+                "required": [
+                  "identifier"
+                ],
+                "not": {
+                  "required": [
+                    "identifiers"
+                  ]
+                }
+              },
+              {
+                "required": [
+                  "kind",
+                  "behavior",
+                  "identifiers"
+                ],
+                "not": {
+                  "required": [
+                    "identifier"
+                  ]
+                },
+                "properties": {
+                  "kind": {
+                    "const": "property"
+                  },
+                  "behavior": {
+                    "const": "write"
                   }
                 }
               }

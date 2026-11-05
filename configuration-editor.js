@@ -7,7 +7,7 @@
   const replacePath = (path, oldPath, newPath) => prefix(path, oldPath) ? newPath + path.slice(oldPath.length) : path;
   const parseTarget = row => {
     const parts = (row.method || '').split(':');
-    return parts.length === 1 ? {kind:'service', identifier:parts[0]} : {kind:parts[0], identifier:parts[1], behavior:parts[2]};
+    return parts.length === 1 ? {kind:'service', identifier:parts[0]} : parts[0]==='property'&&parts[1].includes('|') ? {kind:'property',identifiers:parts[1].split('|'),behavior:parts[2]} : {kind:parts[0], identifier:parts[1], behavior:parts[2]};
   };
   const labels = {properties:'属性', events:'事件', methods:'服务（方法）'};
   const interactionLabels = {request_response:'请求与响应', query_and_report:'请求响应及主动上报', one_way:'仅下发，无应用响应', receive_only:'仅接收上行'};
@@ -25,7 +25,7 @@
 
   function matchesScope(row, scope) {
     const t = parseTarget(row);
-    return t.kind === ({properties:'property',methods:'service',events:'event'}[scope.category]) && t.identifier === scope.identifier;
+    return t.kind === ({properties:'property',methods:'service',events:'event'}[scope.category]) && (t.identifiers || [t.identifier]).includes(scope.identifier);
   }
   function references(workspace, node) {
     const s = nodeScope(node); if (!s) return [];
@@ -57,9 +57,10 @@
           if (s.role !== 'input') for (const u of workspace.command_metadata?.[c.operation]?.propertyUpdates || []) u.from = replacePath(u.from,s.relative,next);
         }
         if (s.root) {
-          const t = parseTarget(c);t.identifier = name;
-          c.method = t.kind === 'service' && !c.method.includes(':') ? name : [t.kind,name,t.behavior].filter(Boolean).join(':');
-          if (workspace.targets?.[c.operation]) workspace.targets[c.operation].identifier = name;
+          const t = parseTarget(c);
+          if(t.identifiers)t.identifiers=t.identifiers.map(x=>x===s.identifier?name:x);else t.identifier=name;
+          c.method = t.kind === 'service' && !c.method.includes(':') ? name : [t.kind,t.identifiers?t.identifiers.join('|'):name,t.behavior].filter(Boolean).join(':');
+          if (workspace.targets?.[c.operation]) workspace.targets[c.operation] = {...t};
         }
       }
       if (s.category === 'properties' && s.root) for (const u of workspace.command_metadata?.[c.operation]?.propertyUpdates || []) if (u.to === s.identifier) u.to = name;
@@ -103,7 +104,7 @@
     const field = (label, control) => `<label class="form-control"><span>${label}</span>${control}</label>`;
     const input = (id,value='',extra='') => `<input class="input" id="${id}" value="${esc(value)}" ${extra}>`;
     const select = (id,items,current,placeholder) => `<select class="select" id="${id}">${options(items,current,placeholder)}</select>`;
-    const targetName = c => {const t=parseTarget(c);const schema=t.kind==='service'?state.workspace.model.methods[t.identifier]:state.workspace.model[t.kind==='event'?'events':'properties'][t.identifier];return `${schema?.title || schema?.name || t.identifier}${t.behavior ? ' · '+({read:'读取',write:'设置',report:'上报'}[t.behavior] || t.behavior):''}`;};
+    const targetName = c => {const t=parseTarget(c);const schema=t.kind==='service'?state.workspace.model.methods[t.identifier]:state.workspace.model[t.kind==='event'?'events':'properties'][t.identifier];return `${t.identifiers?t.identifiers.join('、'):schema?.title || schema?.name || t.identifier}${t.behavior ? ' · '+({read:'读取',write:'设置',report:'上报'}[t.behavior] || t.behavior):''}`;};
     const commandName = c => `${c.sid}/${c.cid} · ${targetName(c)}`;
     function schemaSummary(schema) {
       if (!schema) return '未定义';
@@ -184,7 +185,7 @@
       const t=parseTarget(row),m=state.workspace.model;
       if(t.kind==='service')return m.methods[t.identifier]?.[direction==='request'?'input':'output'];
       if(t.kind==='event')return direction==='incoming'?m.events[t.identifier]:null;
-      return {type:'object',properties:{[t.identifier]:m.properties[t.identifier]}};
+      return {type:'object',properties:Object.fromEntries((t.identifiers || [t.identifier]).map(n=>[n,m.properties[n]]))};
     }
     function schemaPaths(schema,base='',out=[]) {
       if(!schema)return out;
@@ -202,15 +203,18 @@
       if(table==='commands') {
         const t=old?parseTarget(old):{},refs=[];
         for(const bucket of ['properties','events','methods'])for(const [key,schema]of Object.entries(state.workspace.model[bucket]))refs.push([({properties:'property',events:'event',methods:'service'}[bucket])+':'+key,`${labels[bucket]} · ${schema.title||schema.name||key} (${key})`]);
-        html='<div class="form-grid">'+field('物模型功能',select('mapTarget',refs,t.kind?`${t.kind}:${t.identifier}`:'','请选择功能'))+field('属性行为',select('mapBehavior',[['read','读取'],['write','设置'],['report','上报']],t.behavior||'read'))+field('SID',input('mapSid',old?.sid||'', 'placeholder="例如 0x11"'))+field('CID',input('mapCid',old?.cid||'','placeholder="例如 0x02"'))+field('交互方式',select('mapInteraction',Object.entries(interactionLabels),old?.interaction||'request_response'))+'</div>';
+        refs.push(['property-group','多个属性 · 合并设置']);
+        html='<div class="form-grid">'+field('物模型功能',select('mapTarget',refs,t.identifiers?'property-group':t.kind?`${t.kind}:${t.identifier}`:'','请选择功能'))+field('属性行为',select('mapBehavior',[['read','读取'],['write','设置'],['report','上报']],t.behavior||'read'))+field('设置的属性（至少两个）',`<select id="mapProperties" class="select" multiple size="5">${Object.entries(state.workspace.model.properties).filter(([,s])=>(s.access||'').includes('w')).map(([n,s])=>`<option value="${esc(n)}" ${(t.identifiers||[]).includes(n)?'selected':''}>${esc(s.title||n)} (${esc(n)})</option>`).join('')}</select>`)+field('SID',input('mapSid',old?.sid||'', 'placeholder="例如 0x11"'))+field('CID',input('mapCid',old?.cid||'','placeholder="例如 0x02"'))+field('交互方式',select('mapInteraction',Object.entries(interactionLabels),old?.interaction||'request_response'))+'</div>';
         html+='<fieldset class="reply-choices"><legend>应用层回包形式（可多选）</legend>'+['incoming','result','empty'].map(v=>`<label><input type="checkbox" data-reply="${v}" ${old?.receive_variants.split('|').includes(v)?'checked':''}>${{incoming:'业务数据',result:'结果码',empty:'空回包'}[v]}</label>`).join('')+'</fieldset>';
         const meta=state.workspace.command_metadata?.[old?.operation]||{};
-        html+='<details class="editor-advanced"><summary>高级配置与说明</summary>'+field('成功结果码（仅在协议明确时填写）',input('mapSuccess',meta.resultSuccessCode??'','inputmode="numeric"'))+'<h3>上行数据更新属性</h3><p>明确选择数据来源和目标属性；不会按同名自动建立更新关系。</p><div id="projectionRows"></div><button class="button button-small button-outline" type="button" id="addProjectionBtn">新增更新关系</button>'+field('来源',`<textarea class="input textarea-small" id="mapSource">${esc(old?.source||'')}</textarea>`)+field('备注（每行一条）',`<textarea class="input textarea-small" id="mapNotes">${esc((meta.notes||[]).join('\n'))}</textarea>`)+`<p class="readonly-note">关联方式：${esc(old?.correlation||'由当前交互生成')}；本引擎不保证精确匹配某次请求。${old?.timeout_ms?' 已有超时 '+esc(old.timeout_ms)+' ms（保留，Demo不执行计时）。':''}</p></details>`;
+        html+='<section class="projection-config"><h3>上行数据更新属性</h3><p>选择输出字段和已有属性。同名只提供建议，确认后才会生成属性更新。</p><div id="projectionSuggestions"></div><div id="projectionRows"></div><button class="button button-small button-outline" type="button" id="addProjectionBtn">新增更新关系</button></section>';
+        html+='<details class="editor-advanced"><summary>高级配置与说明</summary>'+field('成功结果码（仅在协议明确时填写）',input('mapSuccess',meta.resultSuccessCode??'','inputmode="numeric"'))+field('来源',`<textarea class="input textarea-small" id="mapSource">${esc(old?.source||'')}</textarea>`)+field('备注（每行一条）',`<textarea class="input textarea-small" id="mapNotes">${esc((meta.notes||[]).join('\n'))}</textarea>`)+`<p class="readonly-note">关联方式：${esc(old?.correlation||'由当前交互生成')}；本引擎不保证精确匹配某次请求。${old?.timeout_ms?' 已有超时 '+esc(old.timeout_ms)+' ms（保留，Demo不执行计时）。':''}</p></details>`;
         $('mappingFields').innerHTML=html;
-        const refresh=()=>{const property=$('mapTarget').value.startsWith('property:');$('mapBehavior').closest('label').hidden=!property;};
+        const refresh=()=>{const property=$('mapTarget').value.startsWith('property:');$('mapBehavior').closest('label').hidden=!property;$('mapProperties').closest('label').hidden=$('mapTarget').value!=='property-group';renderProjectionSuggestions();};
         $('mapTarget').addEventListener('change',refresh);refresh();
         for(const u of meta.propertyUpdates||[])addProjection(u);
         $('addProjectionBtn').onclick=()=>addProjection({from:'',to:''});
+        renderProjectionSuggestions();
       } else if(table==='bindings') {
         const cmd=currentCommand();const paths=schemaPaths(rootsFor(cmd,role));
         const types=state.wireTypes.map(t=>[t,t]);
@@ -233,23 +237,38 @@
       const props=Object.keys(state.workspace.model.properties).map(k=>[k,k]);
       if(u.to&&!props.some(([p])=>p===u.to))props.push([u.to,u.to]);
       div.innerHTML=`<label class="form-control"><span>上行数据字段</span><select class="select" data-projection-from>${options(available,u.from,'选择来源')}</select></label><label class="form-control"><span>更新到属性</span><select class="select" data-projection-to>${options(props,u.to,'选择属性')}</select></label><button class="tree-action danger" type="button" data-remove-projection>移除</button>`;
-      div.querySelector('[data-remove-projection]').onclick=()=>div.remove();$('projectionRows').append(div);
+      div.querySelector('[data-remove-projection]').onclick=()=>{div.remove();renderProjectionSuggestions();};$('projectionRows').append(div);
     }
     function hex(value) {if(!/^(?:0x)?[0-9a-f]{1,2}$/i.test(value.trim()))throw Error('SID/CID必须为一个字节的十六进制地址');return '0x'+parseInt(value,16).toString(16).toUpperCase().padStart(2,'0');}
+    function renderProjectionSuggestions() {
+      const root=$('projectionSuggestions');if(!root)return;root.replaceChildren();
+      const selected=$('mapTarget').value;if(!selected.startsWith('service:')&&!selected.startsWith('event:'))return;
+      const schema=rootsFor({method:selected},'incoming');
+      const shape=s=>{if(!s||typeof s!=='object')return s;if(Array.isArray(s))return s.map(shape);return Object.fromEntries(Object.keys(s).filter(k=>!['title','description','access'].includes(k)).sort().map(k=>[k,k==='properties'?Object.fromEntries(Object.keys(s[k]).sort().map(n=>[n,shape(s[k][n])])):k==='items'?shape(s[k]):s[k]]));};
+      for(const [from] of schemaPaths(schema).filter(([p])=>p&&!p.includes('[]'))) {
+        let source=schema;for(const token of from.split('.'))source=source?.properties?.[token];
+        const to=from.split('.').at(-1),destination=state.workspace.model.properties[to];
+        if(!destination||destination.access==='w'||JSON.stringify(shape(source))!==JSON.stringify(shape(destination)))continue;
+        if([...document.querySelectorAll('[data-projection-to]')].some(n=>n.value===to))continue;
+        const button=document.createElement('button');button.type='button';button.className='button button-small button-outline';button.dataset.projectionSuggest=to;button.textContent=`关联 ${from} → 属性 ${to}`;button.onclick=()=>{addProjection({from,to});renderProjectionSuggestions();};root.append(button);
+      }
+    }
     function saveMapping(e) {
       e.preventDefault();const {table,index}=editing,rows=state.workspace[table],old=index===null?null:rows[index];
       try {
         let next,metadata;
         if(table==='commands') {
-          const target=$('mapTarget').value;if(!target)throw Error('请选择物模型功能');
+          let target=$('mapTarget').value;if(!target)throw Error('请选择物模型功能');
+          const grouped=target==='property-group';
+          if(grouped){const names=[...$('mapProperties').selectedOptions].map(o=>o.value);if(names.length<2)throw Error('多属性设置至少选择两个可写属性');target='property:'+names.join('|');}
           const sid=hex($('mapSid').value),cid=hex($('mapCid').value);
           if(parseInt(sid,16)<16||parseInt(sid,16)>254)throw Error('业务SID仅允许0x10～0xFE，公共及保留地址不能由业务字典占用');
           if(rows.some((r,i)=>i!==index&&parseInt(r.sid,16)===parseInt(sid,16)&&parseInt(r.cid,16)===parseInt(cid,16)))throw Error('SID/CID已被其他指令使用');
           const interaction=$('mapInteraction').value,variants=[...document.querySelectorAll('[data-reply]:checked')].map(b=>b.dataset.reply);
           if(interaction==='one_way'&&variants.length)throw Error('仅下发指令不能定义应用回包');
           if(target.startsWith('event:')&&interaction!=='receive_only')throw Error('事件只能配置为仅接收上行');
-          const behavior=$('mapBehavior').value;
-          if(target.startsWith('property:')) {const p=state.workspace.model.properties[target.split(':')[1]],access=p.access||'';if((behavior==='write'&&!access.includes('w'))||(behavior!=='write'&&!access.includes('r')))throw Error('属性行为不符合物模型读写权限');if(behavior==='report'&&interaction!=='receive_only')throw Error('属性上报必须为仅接收上行');if(behavior==='read'&&interaction==='receive_only')throw Error('读取属性需要下行查询');if(behavior!=='write'&&!variants.includes('incoming'))throw Error('读取或上报属性需要业务数据形式');}
+          const behavior=grouped?'write':$('mapBehavior').value;
+          if(target.startsWith('property:')) {for(const name of target.split(':')[1].split('|')){const p=state.workspace.model.properties[name],access=p.access||'';if((behavior==='write'&&!access.includes('w'))||(behavior!=='write'&&!access.includes('r')))throw Error('属性行为不符合物模型读写权限');}if(behavior==='report'&&interaction!=='receive_only')throw Error('属性上报必须为仅接收上行');if(behavior==='read'&&interaction==='receive_only')throw Error('读取属性需要下行查询');if(behavior!=='write'&&!variants.includes('incoming'))throw Error('读取或上报属性需要业务数据形式');}
           let id=old?.operation;if(!id){const stem='cmd_'+sid.slice(2).toLowerCase()+'_'+cid.slice(2).toLowerCase();id=stem;let n=2;while(rows.some(r=>r.operation===id))id=stem+'_'+n++;}
           next={...(old||Object.fromEntries(state.columns.commands.map(k=>[k,'']))),operation:id,method:target+(target.startsWith('property:')?':'+behavior:''),sid,cid,interaction,receive_variants:variants.join('|'),correlation:old?.correlation||(interaction==='one_way'||interaction==='receive_only'?'none':'unmarked'),source:$('mapSource').value,availability:old?.availability||'active'};
           metadata=copy(state.workspace.command_metadata?.[id]||{});

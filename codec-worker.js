@@ -110,6 +110,8 @@ def browser_dispatch(path, body):
             result = dict(ok=True, dictionary=dictionary, identity=dictionary['identity'], operations=demo.operation_descriptions(dictionary), files=demo.thing_mapping.export_pair(request['workspace']))
         elif path == '/api/demo/convert':
             result = demo.convert(request)
+        elif path == '/api/demo/property-set/plan':
+            result = demo.plan_property_set(request.get('workspace'), request.get('properties'), request.get('selections'))
         else:
             raise demo.codec.MappingError('NOT_FOUND', '接口不存在')
         return json.dumps(result, ensure_ascii=False, allow_nan=False)

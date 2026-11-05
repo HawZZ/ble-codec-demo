@@ -30,3 +30,11 @@
 整数Enum可使用u8等整数编码；Int32／Float／Double属于number数值范畴但保留各自平台类型与约束。Bool可使用bool或u8／u16／u32／i8／i16／i32，严格false=0、true=1，不接受其他整数，不使用倍率偏移；系统自动声明boolean-integer/1能力。
 
 engine-mirror.json固定已发布公开引擎包的Git提交和SHA；打包器逐文件保留Pyodide原字节，gzip包及内部每个文件均校验SHA后执行。更换Pyodide资源时先发布新包，再更新固定引用；业务字典更新不需更换公开引擎包。
+
+## 0.4：属性设置与显式输出关联
+
+“属性设置”选择可写属性和值，按启用映射选择指令；多候选必须选择，同指令合并，跨指令按字典顺序输出。全部预检通过才生成HEX清单，缺必填不使用缓存／默认值。生成不表示已发送或设备状态更新，不保证跨指令原子性。合成样例在samples/property-set/（源码examples/ble-codec-demo/property-set/）。
+
+多属性write使用target.identifiers与property-groups/1，旧单属性及两文件format保持不变。服务映射直接展示“上行数据更新属性”，同名输出只提供建议，确认后保存propertyUpdates；未关联／缺失字段／结果码／空包不更新属性。
+
+本轮不改变加载遮罩和引擎缓存策略；首次加载稳定10秒目标仍未验收通过。
